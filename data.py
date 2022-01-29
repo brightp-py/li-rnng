@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from re import X
 import sys
 import numpy as np
 import math
@@ -514,3 +515,81 @@ class Dataset(object):
 
   def __len__(self):
     return self.num_batches
+
+class LI_Dataset(object):
+  def __init__(self, sents, batch_size, vocab, action_dict, random_unk=False, 
+               prepro_args={}, batch_token_size=15000, batch_action_size=50000,
+               batch_group='same_length', max_length_diff=20,
+               group_sentence_size=1024):
+    self.sents = sents
+    self.batch_size = batch_size
+    self.batch_token_size = batch_token_size
+    self.batch_action_size = batch_action_size
+    self.batch_group = batch_group
+    self.max_length_diff = max_length_diff
+    self.group_sentence_size = group_sentence_size
+    self.vocab = vocab
+    self.action_dict = action_dict
+    self.random_unk = random_unk
+    self.prepro_args = prepro_args
+
+  @staticmethod
+  def from_json(data_file, batch_size, num_nts=26, vocab=None,
+                action_dict=None, random_unk = False, oracle='top_down',
+                batch_group='same_length', batch_token_size=15000,
+                batch_action_size=50000, max_length_diff=20,
+                group_sentence_size=1024):
+    def new_action_dict(nonterminals):
+      if oracle == 'top_down':
+        return TopDownActionDict(nonterminals)
+      elif oracle == 'in_order':
+        return InOrderActionDict(nonterminals)
+    
+    def nts_from_number(n):
+      ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+      nts = []
+      start = ''
+      start_ind = 0
+      while n >= 26:
+        nts.extend(start + c for c in ALPHA)
+        n -= 26
+        start = nts[start_ind]
+        start_ind += 1
+      nts.extend(start + c for c in ALPHA[:n])
+      return nts
+    
+    j = LI_Dataset._load_json_helper(data_file)
+    sents = j['sentences']
+    vocab = vocab or Vocabulary.from_data_json(j)
+    action_dict = action_dict or new_action_dict(nts_from_number(num_nts))
+
+    return LI_Dataset(sents, batch_size, vocab, action_dict, random_unk,
+                      j['args'], batch_token_size, batch_action_size,
+                      batch_group, max_length_diff, group_sentence_size)
+  
+  @staticmethod
+  def _load_json_helper(path):
+    data = {}
+    sents = []
+    with open(path) as f:
+      for line in f:
+        o = json.loads(line)
+        k = o['key']
+        if k == 'sentence':
+          o['is_subword_end'] = get_subword_boundary_mask(o['tokens'])
+          o['orig_tokens'] = o['tokens'] = o['tags'] = o['actions'] = \
+          o['action_ids'] = o['max_stack_size'] = o['in_order_actions'] = \
+          o['in_order_action_ids'] = o['in_order_max_stack_size'] = \
+          o['tree_str'] = None
+          sents.append(o)
+        else:
+          assert k not in data
+          data[k] = o['value']
+      data['sentences'] = sents
+      return data
+  
+  def make_decisions(self, model):
+    return Dataset(sents, self.batch_size, self.vocab, self.action_dict,
+                   self.random_unk, self.prepro_args, self.batch_token_size,
+                   self.batch_action_size, self.batch_group,
+                   self.max_length_diff, self.group_sentence_size)
