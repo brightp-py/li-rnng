@@ -1,3 +1,6 @@
+from data import LI_Dataset
+from fixed_stack_in_order_models import FixedStackInOrderRNNG
+from in_order_models import InOrderRNNG
 import torch
 
 def parse(model, tokens, subword_end_mask, beam_size, word_beam_size,
@@ -15,9 +18,9 @@ def beam_search(model, device, dataset, beam_size=200, word_beam_size=20,
 
     with torch.no_grad():
 
-        block_idx = []
-        block_parses = []
-        block_surprisals = []
+        # block_idx = []
+        sents = []
+        # block_surprisals = []
         batches = [batch for batch in dataset.test_batches(
                     block_size, max_length_diff)]
         
@@ -42,10 +45,18 @@ def beam_search(model, device, dataset, beam_size=200, word_beam_size=20,
             
             best_actions = [p[0][0] for p in parses] # p[0][1] is likelihood
             subword_end_mask = subword_end_mask.cpu().numpy()
-            trees = something
-            block_idx.extend(batch_idx)
-            block_parses.extend(trees)
-            block_surprisals.extend(surprisals)
+            # trees = [action_dict.build_tree_str(best_actions[i],
+            #                                     dataset.sents[batch_idx[i]].token_ids,
+            #                                     ['X' for _ in dataset.sents[batch_idx[i]].token_ids],
+            #                                     subword_end_mask[i])
+            #     for i in range(len(batch_idx))]
+            # block_idx.extend(batch_idx)
+            for i in range(len(batch_idx)):
+                sents.append(
+                    {'action_ids': best_actions[i],
+                     'token_ids': dataset.sents[batch_idx[i]].token_ids
+                    })
+            # block_surprisals.extend(surprisals)
             # cur_block_size += tokens.size(0)
 
             # if cur_block_size >= args.block_size:
@@ -55,3 +66,33 @@ def beam_search(model, device, dataset, beam_size=200, word_beam_size=20,
             #     block_parses = []
             #     block_surprisals = []
             #     cur_block_size = 0
+    
+    return sents
+
+def load_model(checkpoint, action_dict, vocab):
+  if 'model_state_dict' in checkpoint:
+    from train import create_model
+    model = create_model(checkpoint['args'], action_dict, vocab)
+    model.load_state_dict(checkpoint['model_state_dict'])
+    return model
+  else:
+    return checkpoint['model']
+
+if __name__ == "__main__":
+    device = 'cuda:0'
+
+    torch.manual_seed(1)
+    checkpoint = torch.load("rnng.pt")
+    vocab = checkpoint['vocab']
+    action_dict = checkpoint['action_dict']
+    prepro_args = checkpoint['prepro_args']
+    model = load_model(checkpoint, action_dict, vocab).to(device)
+
+    li_dataset = LI_Dataset.from_json("data/ptb-train.json", 16)
+    model.eval()
+
+    if isinstance(model, InOrderRNNG) or isinstance(model, FixedStackInOrderRNNG):
+        model.max_cons_nts = 3
+    
+    block_parses = beam_search(model, device, li_dataset.get_beam_dataset())
+    print(block_parses)

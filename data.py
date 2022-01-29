@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 from re import X
 import sys
+from li_beam_search import beam_search
 import numpy as np
 import math
 import torch
 import pickle
+import random
 from collections import defaultdict
 import json
+
 from utils import pad_items, clean_number, berkeley_unk_conv, berkeley_unk_conv2, get_subword_boundary_mask
 from action_dict import TopDownActionDict, InOrderActionDict
 
@@ -533,6 +536,12 @@ class LI_Dataset(object):
     self.random_unk = random_unk
     self.prepro_args = prepro_args
 
+    self._beam_dataset = self._build_beam_dataset()
+    self._decisions = []
+  
+  def get_beam_dataset(self):
+    return self._beam_dataset
+
   @staticmethod
   def from_json(data_file, batch_size, num_nts=26, vocab=None,
                 action_dict=None, random_unk = False, oracle='top_down',
@@ -576,20 +585,75 @@ class LI_Dataset(object):
         o = json.loads(line)
         k = o['key']
         if k == 'sentence':
-          o['is_subword_end'] = get_subword_boundary_mask(o['tokens'])
-          o['orig_tokens'] = o['tokens'] = o['tags'] = o['actions'] = \
-          o['action_ids'] = o['max_stack_size'] = o['in_order_actions'] = \
-          o['in_order_action_ids'] = o['in_order_max_stack_size'] = \
-          o['tree_str'] = None
-          sents.append(o)
+          d = {}
+          d['is_subword_end'] = get_subword_boundary_mask(o['tokens'])
+          # o['orig_tokens'] = o['tokens'] = o['tags'] = o['actions'] = \
+          # o['action_ids'] = o['max_stack_size'] = o['in_order_actions'] = \
+          # o['in_order_action_ids'] = o['in_order_max_stack_size'] = \
+          # o['tree_str'] = None
+          d['token_ids'] = o['token_ids']
+          sents.append(d)
         else:
           assert k not in data
           data[k] = o['value']
       data['sentences'] = sents
-      return data
+    return data
   
-  def make_decisions(self, model):
+  def _build_beam_dataset(self):
+    sents = []
+    for sent in self.sents:
+      is_subword_end = sent['is_subword_end']
+      token_ids = sent['token_ids']
+      sent = Sentence(None, None, token_ids, None,
+                      is_subword_end=is_subword_end)
+      sents.append(sent)
     return Dataset(sents, self.batch_size, self.vocab, self.action_dict,
                    self.random_unk, self.prepro_args, self.batch_token_size,
                    self.batch_action_size, self.batch_group,
                    self.max_length_diff, self.group_sentence_size)
+  
+  def _random_unk(self, token_ids):
+    unk_id = self.vocab.get_id(self.vocab.unktoken)
+    idx = list(range(len(token_ids)))
+    random.shuffle(idx)
+
+    i = 0
+    tokenidx = idx[i]
+    while tokenidx == unk_id:
+      i += 1
+      tokenidx = idx[i]
+
+    toret = token_ids[:]
+    toret[tokenidx] = unk_id
+
+    return toret
+  
+  def make_decisions(self, model, device, beam_size=200, word_beam_size=20,
+                     shift_size=5, block_size=100, stack_size_bound=-1,
+                     max_length_diff=20):
+    self._decisions = beam_search(model, device, self.get_beam_dataset,
+                                  beam_size, word_beam_size, shift_size,
+                                  block_size, stack_size_bound,
+                                  max_length_diff)
+
+  def modified_sentences(self):
+    sents = []
+    for pair in self._decisions:
+      sents.append(Sentence(None, None, self._random_unk(pair['token_ids']),
+                            None, action_ids=pair['action_ids']))
+    return sents
+  
+  def shuffled_sentences(self):
+    sents = []
+    sizes = defaultdict(lambda: [])
+    for pair in self.decisions:
+      sizes[len(pair['token_ids'])].append(pair)
+    for size in sizes:
+      if len(sizes[size]) > 2:  # we can ignore sentences with rare lengths
+        copy = sizes[size][:]
+        random.shuffle(copy)
+        for a, t in zip(sizes[size], copy):
+          sents.append(Sentence(None, None, t['token_ids'], None,
+                                a['action_ids']))
+    return sents
+    
