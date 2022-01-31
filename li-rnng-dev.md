@@ -16,7 +16,7 @@
     - [x] Do one of the following:
         - [ ] Change dynamic Database object with new trees.
         - [x] Create new Database object.
-- [ ] Compare the modified tree to the decided one.
-    - [ ] Run training on modified sentence with decided tree being correct.
-- [ ] Compare the random tree to the decided one.
-    - [ ] Run training on random tree with NEGATIVE PUNISHMENT against decided.
+- [x] Compare the modified tree to the decided one.
+    - [x] Run training on modified sentence with decided tree being correct.
+- [x] Compare the random tree to the decided one.
+    - [x] Run training on random tree with NEGATIVE PUNISHMENT against decided.

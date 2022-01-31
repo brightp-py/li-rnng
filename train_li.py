@@ -22,7 +22,7 @@ import torch.nn.functional as F
 import numpy as np
 import time
 import logging
-from data import Dataset, SentencePieceVocabulary
+from data import Dataset, LI_Dataset, SentencePieceVocabulary
 from models import TopDownRNNG
 from in_order_models import InOrderRNNG
 from fixed_stack_models import FixedStackRNNG
@@ -44,6 +44,7 @@ parser.add_argument('--fixed_stack', action='store_true')
 parser.add_argument('--strategy', default='top_down', choices=['top_down', 'in_order'])
 parser.add_argument('--w_dim', default=256, type=int, help='input/output word dimension')
 parser.add_argument('--h_dim', default=256, type=int, help='LSTM hidden dimension')
+parser.add_argument('--num_nts', default=26, type=int, help='number of dummy nonterminals')
 parser.add_argument('--num_layers', default=2, type=int, help='number of layers in LM and the stack LSTM (for RNNG)')
 parser.add_argument('--dropout', default=0.3, type=float, help='dropout rate')
 parser.add_argument('--composition', default='lstm', choices=['lstm', 'attention'],
@@ -199,20 +200,23 @@ def main(args):
   # for the LI-RNNG, we would need to create a dynamic dataset where the
   # correct answer can change.
   # Dataset from data.py
-  train_data = Dataset.from_json(args.train_file, args.batch_size, vocab=vocab,
-                                 random_unk=args.random_unk,
-                                 oracle=args.strategy, batch_group=args.batch_group,
-                                 batch_token_size=args.batch_token_size,
-                                 batch_action_size=args.batch_action_size,
-                                 max_length_diff=args.max_group_length_diff,
-                                 group_sentence_size=args.group_sentence_size)
-  vocab = train_data.vocab  # are we overwriting it?
-  action_dict = train_data.action_dict
+  dataset_builder = LI_Dataset.from_json(args.train_file, args.batch_size,
+                                         num_nts=args.num_nts, vocab=vocab,
+                                         random_unk=args.random_unk,
+                                         oracle=args.strategy,
+                                         batch_group=args.batch_group,
+                                         batch_token_size=args.batch_token_size,
+                                         batch_action_size=args.batch_action_size,
+                                         max_length_diff=args.max_group_length_diff,
+                                         group_sentence_size=args.group_sentence_size)
+  
+  vocab = dataset_builder.vocab  # are we overwriting it?
+  action_dict = dataset_builder.action_dict
   val_data = Dataset.from_json(args.val_file, args.batch_size, vocab, action_dict,
                                oracle=args.strategy)
-  vocab_size = int(train_data.vocab_size)
+  vocab_size = int(dataset_builder.vocab_size)
   logger.info('Train: %d sents / %d batches, Val: %d sents / %d batches' %
-              (len(train_data.sents), len(train_data), len(val_data.sents),
+              (len(dataset_builder.sents), 0.0, len(val_data.sents),
                len(val_data)))
   logger.info('Vocab size: %d' % vocab_size)
 
@@ -279,6 +283,12 @@ def main(args):
     prev_ll = 0. # TODO
     batch_sizes = []
 
+    model.eval()
+    dataset_builder.make_decisions(model, device, beam_size=100)
+    train_mod = dataset_builder.modified_sentences()
+    train_shf = dataset_builder.shuffled_sentences()
+    model.train()
+
     def output_learn_log():
       param_norm = sum([p.norm()**2 for p in model.parameters()]).item()**0.5
       total_ll = total_a_ll + total_w_ll
@@ -290,7 +300,7 @@ def main(args):
                   'ActionPPL: {:.2f}, WordPPL: {:.2f}, '
                   'PPL: {:2f}, LL: {}, '
                   '|Param|: {:.2f}, E[batch size]: {}, Throughput: {:.2f} examples/sec'.format(
-                    epoch, b, len(train_data), optimizer.param_groups[0]['lr'],
+                    epoch, b, len(train_mod), optimizer.param_groups[0]['lr'],
                     action_ppl, word_ppl,
                     ppl, -ll_diff,
                     param_norm,
@@ -313,7 +323,7 @@ def main(args):
         loss = loss / w_loss.size(0)
       return loss, a_loss, w_loss
 
-    def batch_step(token_ids, action_ids, max_stack_size, subword_end_mask, num_divides):
+    def batch_step(token_ids, action_ids, max_stack_size, subword_end_mask, num_divides, bias=1):
       optimizer.zero_grad()
       block_size = token_ids.size(0) // num_divides
       total_a_loss = 0
@@ -326,6 +336,7 @@ def main(args):
         div_subword_end_mask = subword_end_mask[begin_idx:begin_idx+block_size]
         loss, a_loss, w_loss = calc_loss(div_token_ids, div_action_ids,
                                          max_stack_size, div_subword_end_mask)
+        loss *= bias
         if num_divides > 1:
           loss  = loss / num_divides
         if args.amp:
@@ -339,9 +350,9 @@ def main(args):
       return total_a_loss, total_w_loss, num_as, num_ws
 
     def try_batch_step(token_ids, action_ids, max_stack_size, subword_end_mask,
-                       num_divides = 1):
+                       num_divides = 1, bias = 1):
       try:
-        return batch_step(token_ids, action_ids, max_stack_size, subword_end_mask, num_divides)
+        return batch_step(token_ids, action_ids, max_stack_size, subword_end_mask, num_divides, bias)
       except RuntimeError as e:  # memory error -> retry by reducing batch size
         # Error is processed outside this scope.
         # A hack to prevent memory leak when handling oov.
@@ -357,8 +368,9 @@ def main(args):
       return try_batch_step(token_ids, action_ids, max_stack_size, subword_end_mask,
                             num_divides * 2)
 
-    # reminder: train_data is a Database object
-    for batch in train_data.batches():
+    ### MODIFIED DATA ###
+    # reminder: train_mod is a Database object
+    for batch in train_mod.batches():
       token_ids, action_ids, max_stack_size, subword_end_mask, batch_idx = batch
       batch_sizes.append(token_ids.size(0))
       token_ids = token_ids.to(device)
@@ -392,7 +404,7 @@ def main(args):
       num_words += batch_ll[3]
 
       # trying to obtain a discrete value that would have meaning at each epoch boundary.
-      continuous_epoch = int(((epoch-1) + (b / len(train_data))) * 10000)
+      continuous_epoch = int(((epoch-1) + (b / len(train_mod))) * 10000)
 
       if b % args.print_every == 0:
         ppl, word_ppl, _ = output_learn_log()
@@ -400,16 +412,61 @@ def main(args):
         tb.write({'Train ppl': ppl, 'Train word ppl': word_ppl, 'lr': args.lr}, continuous_epoch)
 
       if args.valid_every > 0 and global_batch_i % args.valid_every == 0:
-        do_valid(model, optimizer, scheduler, train_data, val_data, tb, epoch, continuous_epoch, val_losses, args)
+        do_valid(model, optimizer, scheduler, train_mod, val_data, tb, epoch, continuous_epoch, val_losses, args)
+
+    ### SHUFFLED DATA ###
+    for batch in train_shf.batches():
+      token_ids, action_ids, max_stack_size, subword_end_mask, batch_idx = batch
+      batch_sizes.append(token_ids.size(0))
+      token_ids = token_ids.to(device)
+      action_ids = action_ids.to(device)
+      subword_end_mask = subword_end_mask.to(device)
+      b += 1
+      global_batch_i += 1
+      # optimizer.zero_grad()
+
+      batch_ll = try_batch_step(token_ids, action_ids, max_stack_size, subword_end_mask, bias=-0.5)
+      total_a_ll += batch_ll[0]
+      total_w_ll += batch_ll[1]
+
+      if args.amp:
+        if args.max_grad_norm > 0:
+          scaler.unscale_(optimizer)
+          torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
+        scaler.step(optimizer)
+        scaler.update()
+      else:
+        if args.max_grad_norm > 0:
+          torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
+        optimizer.step()
+
+      if not isinstance(scheduler, ReduceLROnPlateau):
+        scheduler.step()
+
+      num_sents += token_ids.size(0)
+      # assert token_ids.size(0) * token_ids.size(1) == w_loss.size(0)
+      num_actions += batch_ll[2]
+      num_words += batch_ll[3]
+
+      # trying to obtain a discrete value that would have meaning at each epoch boundary.
+      continuous_epoch = int(((epoch-1) + (b / len(train_shf))) * 10000)
+
+      if b % args.print_every == 0:
+        ppl, word_ppl, _ = output_learn_log()
+        prev_ll = total_a_ll + total_w_ll
+        tb.write({'Train ppl': ppl, 'Train word ppl': word_ppl, 'lr': args.lr}, continuous_epoch)
+
+      if args.valid_every > 0 and global_batch_i % args.valid_every == 0:
+        do_valid(model, optimizer, scheduler, train_shf, val_data, tb, epoch, continuous_epoch, val_losses, args)
 
     output_learn_log()
     epoch += 1
     if args.valid_every <= 0:
-      do_valid(model, optimizer, scheduler, train_data, val_data, tb, epoch, epoch, val_losses, args)
+      do_valid(model, optimizer, scheduler, train_shf, val_data, tb, epoch, epoch, val_losses, args)
 
   # Last validation is necessary when validations were performed intermediately.
   if args.valid_every > 0:
-    do_valid(model, optimizer, train_data, val_data, tb, epoch, continuous_epoch, val_losses, args)
+    do_valid(model, optimizer, train_mod, val_data, tb, epoch, continuous_epoch, val_losses, args)
   logger.info("Finished training!")
 
 def do_valid(model, optimizer, scheduler, train_data, val_data, tb, epoch, step, val_losses, args):

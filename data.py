@@ -536,6 +536,8 @@ class LI_Dataset(object):
     self.random_unk = random_unk
     self.prepro_args = prepro_args
 
+    self.vocab_size = vocab.size()
+
     self._beam_dataset = self._build_beam_dataset()
     self._decisions = []
   
@@ -565,6 +567,7 @@ class LI_Dataset(object):
         start = nts[start_ind]
         start_ind += 1
       nts.extend(start + c for c in ALPHA[:n])
+      nts = [f"{nt}P" for nt in nts]
       return nts
     
     j = LI_Dataset._load_json_helper(data_file)
@@ -591,6 +594,7 @@ class LI_Dataset(object):
           # o['action_ids'] = o['max_stack_size'] = o['in_order_actions'] = \
           # o['in_order_action_ids'] = o['in_order_max_stack_size'] = \
           # o['tree_str'] = None
+          d['tokens'] = o['tokens']
           d['token_ids'] = o['token_ids']
           sents.append(d)
         else:
@@ -603,8 +607,9 @@ class LI_Dataset(object):
     sents = []
     for sent in self.sents:
       is_subword_end = sent['is_subword_end']
+      tokens = sent['tokens']
       token_ids = sent['token_ids']
-      sent = Sentence(None, None, token_ids, None,
+      sent = Sentence(None, tokens, token_ids, None,
                       is_subword_end=is_subword_end)
       sents.append(sent)
     return Dataset(sents, self.batch_size, self.vocab, self.action_dict,
@@ -628,10 +633,10 @@ class LI_Dataset(object):
 
     return toret
   
-  def make_decisions(self, model, device, beam_size=200, word_beam_size=20,
+  def make_decisions(self, model, device, beam_size=100, word_beam_size=10,
                      shift_size=5, block_size=100, stack_size_bound=-1,
                      max_length_diff=20):
-    self._decisions = beam_search(model, device, self.get_beam_dataset,
+    self._decisions = beam_search(model, device, self.get_beam_dataset(),
                                   beam_size, word_beam_size, shift_size,
                                   block_size, stack_size_bound,
                                   max_length_diff)
@@ -639,21 +644,27 @@ class LI_Dataset(object):
   def modified_sentences(self):
     sents = []
     for pair in self._decisions:
-      sents.append(Sentence(None, None, self._random_unk(pair['token_ids']),
+      sents.append(Sentence(None, pair['tokens'],
+                            self._random_unk(pair['token_ids']),
                             None, action_ids=pair['action_ids']))
-    return sents
+    return Dataset(sents, self.batch_size, self.vocab, self.action_dict,
+                   self.random_unk, self.prepro_args, self.batch_token_size,
+                   self.batch_action_size, self.batch_group,
+                   self.max_length_diff, self.group_sentence_size)
   
   def shuffled_sentences(self):
     sents = []
     sizes = defaultdict(lambda: [])
-    for pair in self.decisions:
+    for pair in self._decisions:
       sizes[len(pair['token_ids'])].append(pair)
     for size in sizes:
       if len(sizes[size]) > 2:  # we can ignore sentences with rare lengths
         copy = sizes[size][:]
         random.shuffle(copy)
         for a, t in zip(sizes[size], copy):
-          sents.append(Sentence(None, None, t['token_ids'], None,
+          sents.append(Sentence(None, t['tokens'], t['token_ids'], None,
                                 a['action_ids']))
-    return sents
-    
+    return Dataset(sents, self.batch_size, self.vocab, self.action_dict,
+                   self.random_unk, self.prepro_args, self.batch_token_size,
+                   self.batch_action_size, self.batch_group,
+                   self.max_length_diff, self.group_sentence_size)
