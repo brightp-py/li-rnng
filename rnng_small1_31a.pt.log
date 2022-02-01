@@ -1,0 +1,984 @@
+2022-01-31 16:10:57,767:__main__:INFO: Args: Namespace(train_file='data/small-train.json', val_file='data/small-val.json', train_from='', sp_model='', fixed_stack=True, strategy='top_down', w_dim=256, h_dim=256, num_nts=26, num_layers=2, dropout=0.3, composition='lstm', not_swap_in_order_stack=False, batch_group='similar_length', max_group_length_diff=20, group_sentence_size=1024, optimizer='adam', lr_scheduler=None, plateau_lr_decay=0.5, plateau_lr_patience=1, warmup_steps=10000, random_unk=False, batch_size=2, batch_token_size=15000, batch_action_size=45000, save_path='rnng_small1_31a.pt', num_epochs=18, min_epochs=8, lr=0.001, loss_normalize='batch', param_init=0, max_grad_norm=5, gpu=0, device='cuda', seed=3435, print_every=500, valid_every=-1, tensorboard_log_dir='', amp=False, early_stop=False, early_stop_patience=5)
+2022-01-31 16:10:57,814:__main__:INFO: Train: 1375 sents / 0 batches, Val: 228 sents / 128 batches
+2022-01-31 16:10:57,815:__main__:INFO: Vocab size: 1509
+2022-01-31 16:10:59,048:__main__:INFO: model architecture
+2022-01-31 16:10:59,049:__main__:INFO: FixedStackRNNG(
+  (action_criterion): CrossEntropyLoss()
+  (word_criterion): CrossEntropyLoss()
+  (dropout): Dropout(p=0.3, inplace=True)
+  (emb): Sequential(
+    (0): Embedding(1509, 256, padding_idx=0)
+    (1): Dropout(p=0.3, inplace=True)
+  )
+  (rnng): RNNGCell(
+    (dropout): Dropout(p=0.3, inplace=True)
+    (nt_emb): Sequential(
+      (0): Embedding(26, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+    (stack_rnn): MultiLayerLSTMCell(
+      (lstm): ModuleList(
+        (0): LSTMCell(256, 256)
+        (1): LSTMCell(256, 256)
+      )
+      (dropout_layer): Dropout(p=0.3, inplace=True)
+    )
+    (output): Sequential(
+      (0): Dropout(p=0.3, inplace=True)
+      (1): Linear(in_features=256, out_features=256, bias=True)
+      (2): ReLU()
+    )
+    (composition): LSTMComposition(
+      (rnn): LSTM(256, 256, batch_first=True, bidirectional=True)
+      (output): Sequential(
+        (0): Dropout(p=0.3, inplace=True)
+        (1): Linear(in_features=512, out_features=256, bias=True)
+        (2): ReLU()
+      )
+    )
+    (initial_emb): Sequential(
+      (0): Embedding(1, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+  )
+  (vocab_mlp): Linear(in_features=256, out_features=1509, bias=True)
+  (action_mlp): Linear(in_features=256, out_features=29, bias=True)
+)
+2022-01-31 16:10:59,050:__main__:INFO: Model total parameters: 2704642
+2022-01-31 16:10:59,050:__main__:INFO: Starting epoch 1
+2022-01-31 16:16:00,389:__main__:INFO: Args: Namespace(train_file='data/small-train.json', val_file='data/small-val.json', train_from='', sp_model='', fixed_stack=True, strategy='top_down', w_dim=256, h_dim=256, num_nts=26, num_layers=2, dropout=0.3, composition='lstm', not_swap_in_order_stack=False, batch_group='similar_length', max_group_length_diff=20, group_sentence_size=1024, optimizer='adam', lr_scheduler=None, plateau_lr_decay=0.5, plateau_lr_patience=1, warmup_steps=10000, random_unk=False, batch_size=2, batch_token_size=15000, batch_action_size=45000, save_path='rnng_small1_31a.pt', num_epochs=18, min_epochs=8, lr=0.001, loss_normalize='batch', param_init=0, max_grad_norm=5, gpu=0, device='cuda', seed=3435, print_every=500, valid_every=-1, tensorboard_log_dir='', amp=False, early_stop=False, early_stop_patience=5)
+2022-01-31 16:16:00,427:__main__:INFO: Train: 1375 sents / 0 batches, Val: 228 sents / 128 batches
+2022-01-31 16:16:00,427:__main__:INFO: Vocab size: 1509
+2022-01-31 16:16:01,658:__main__:INFO: model architecture
+2022-01-31 16:16:01,658:__main__:INFO: FixedStackRNNG(
+  (action_criterion): CrossEntropyLoss()
+  (word_criterion): CrossEntropyLoss()
+  (dropout): Dropout(p=0.3, inplace=True)
+  (emb): Sequential(
+    (0): Embedding(1509, 256, padding_idx=0)
+    (1): Dropout(p=0.3, inplace=True)
+  )
+  (rnng): RNNGCell(
+    (dropout): Dropout(p=0.3, inplace=True)
+    (nt_emb): Sequential(
+      (0): Embedding(26, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+    (stack_rnn): MultiLayerLSTMCell(
+      (lstm): ModuleList(
+        (0): LSTMCell(256, 256)
+        (1): LSTMCell(256, 256)
+      )
+      (dropout_layer): Dropout(p=0.3, inplace=True)
+    )
+    (output): Sequential(
+      (0): Dropout(p=0.3, inplace=True)
+      (1): Linear(in_features=256, out_features=256, bias=True)
+      (2): ReLU()
+    )
+    (composition): LSTMComposition(
+      (rnn): LSTM(256, 256, batch_first=True, bidirectional=True)
+      (output): Sequential(
+        (0): Dropout(p=0.3, inplace=True)
+        (1): Linear(in_features=512, out_features=256, bias=True)
+        (2): ReLU()
+      )
+    )
+    (initial_emb): Sequential(
+      (0): Embedding(1, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+  )
+  (vocab_mlp): Linear(in_features=256, out_features=1509, bias=True)
+  (action_mlp): Linear(in_features=256, out_features=29, bias=True)
+)
+2022-01-31 16:16:01,659:__main__:INFO: Model total parameters: 2704642
+2022-01-31 16:16:01,659:__main__:INFO: Starting epoch 1
+2022-01-31 16:21:34,735:__main__:INFO: Args: Namespace(train_file='data/small-train.json', val_file='data/small-val.json', train_from='', sp_model='', fixed_stack=True, strategy='top_down', w_dim=256, h_dim=256, num_nts=26, num_layers=2, dropout=0.3, composition='lstm', not_swap_in_order_stack=False, batch_group='similar_length', max_group_length_diff=20, group_sentence_size=1024, optimizer='adam', lr_scheduler=None, plateau_lr_decay=0.5, plateau_lr_patience=1, warmup_steps=10000, random_unk=False, batch_size=16, batch_token_size=15000, batch_action_size=45000, save_path='rnng_small1_31a.pt', num_epochs=18, min_epochs=8, lr=0.001, loss_normalize='batch', param_init=0, max_grad_norm=5, gpu=0, device='cuda', seed=3435, print_every=500, valid_every=-1, tensorboard_log_dir='', amp=False, early_stop=False, early_stop_patience=5)
+2022-01-31 16:21:34,773:__main__:INFO: Train: 1375 sents / 0 batches, Val: 228 sents / 48 batches
+2022-01-31 16:21:34,773:__main__:INFO: Vocab size: 1509
+2022-01-31 16:21:35,990:__main__:INFO: model architecture
+2022-01-31 16:21:35,990:__main__:INFO: FixedStackRNNG(
+  (action_criterion): CrossEntropyLoss()
+  (word_criterion): CrossEntropyLoss()
+  (dropout): Dropout(p=0.3, inplace=True)
+  (emb): Sequential(
+    (0): Embedding(1509, 256, padding_idx=0)
+    (1): Dropout(p=0.3, inplace=True)
+  )
+  (rnng): RNNGCell(
+    (dropout): Dropout(p=0.3, inplace=True)
+    (nt_emb): Sequential(
+      (0): Embedding(26, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+    (stack_rnn): MultiLayerLSTMCell(
+      (lstm): ModuleList(
+        (0): LSTMCell(256, 256)
+        (1): LSTMCell(256, 256)
+      )
+      (dropout_layer): Dropout(p=0.3, inplace=True)
+    )
+    (output): Sequential(
+      (0): Dropout(p=0.3, inplace=True)
+      (1): Linear(in_features=256, out_features=256, bias=True)
+      (2): ReLU()
+    )
+    (composition): LSTMComposition(
+      (rnn): LSTM(256, 256, batch_first=True, bidirectional=True)
+      (output): Sequential(
+        (0): Dropout(p=0.3, inplace=True)
+        (1): Linear(in_features=512, out_features=256, bias=True)
+        (2): ReLU()
+      )
+    )
+    (initial_emb): Sequential(
+      (0): Embedding(1, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+  )
+  (vocab_mlp): Linear(in_features=256, out_features=1509, bias=True)
+  (action_mlp): Linear(in_features=256, out_features=29, bias=True)
+)
+2022-01-31 16:21:35,991:__main__:INFO: Model total parameters: 2704642
+2022-01-31 16:21:35,992:__main__:INFO: Starting epoch 1
+2022-01-31 16:29:21,618:__main__:INFO: Args: Namespace(train_file='data/small-train.json', val_file='data/small-val.json', train_from='', sp_model='', fixed_stack=True, strategy='top_down', w_dim=256, h_dim=256, num_nts=26, num_layers=2, dropout=0.3, composition='lstm', not_swap_in_order_stack=False, batch_group='similar_length', max_group_length_diff=20, group_sentence_size=1024, optimizer='adam', lr_scheduler=None, plateau_lr_decay=0.5, plateau_lr_patience=1, warmup_steps=10000, random_unk=False, batch_size=16, batch_token_size=15000, batch_action_size=45000, save_path='rnng_small1_31a.pt', num_epochs=18, min_epochs=8, lr=0.001, loss_normalize='batch', param_init=0, max_grad_norm=5, gpu=0, device='cuda', seed=3435, print_every=500, valid_every=-1, tensorboard_log_dir='', amp=False, early_stop=False, early_stop_patience=5)
+2022-01-31 16:29:21,656:__main__:INFO: Train: 1375 sents / 0 batches, Val: 228 sents / 48 batches
+2022-01-31 16:29:21,657:__main__:INFO: Vocab size: 1509
+2022-01-31 16:29:22,884:__main__:INFO: model architecture
+2022-01-31 16:29:22,884:__main__:INFO: FixedStackRNNG(
+  (action_criterion): CrossEntropyLoss()
+  (word_criterion): CrossEntropyLoss()
+  (dropout): Dropout(p=0.3, inplace=True)
+  (emb): Sequential(
+    (0): Embedding(1509, 256, padding_idx=0)
+    (1): Dropout(p=0.3, inplace=True)
+  )
+  (rnng): RNNGCell(
+    (dropout): Dropout(p=0.3, inplace=True)
+    (nt_emb): Sequential(
+      (0): Embedding(26, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+    (stack_rnn): MultiLayerLSTMCell(
+      (lstm): ModuleList(
+        (0): LSTMCell(256, 256)
+        (1): LSTMCell(256, 256)
+      )
+      (dropout_layer): Dropout(p=0.3, inplace=True)
+    )
+    (output): Sequential(
+      (0): Dropout(p=0.3, inplace=True)
+      (1): Linear(in_features=256, out_features=256, bias=True)
+      (2): ReLU()
+    )
+    (composition): LSTMComposition(
+      (rnn): LSTM(256, 256, batch_first=True, bidirectional=True)
+      (output): Sequential(
+        (0): Dropout(p=0.3, inplace=True)
+        (1): Linear(in_features=512, out_features=256, bias=True)
+        (2): ReLU()
+      )
+    )
+    (initial_emb): Sequential(
+      (0): Embedding(1, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+  )
+  (vocab_mlp): Linear(in_features=256, out_features=1509, bias=True)
+  (action_mlp): Linear(in_features=256, out_features=29, bias=True)
+)
+2022-01-31 16:29:22,885:__main__:INFO: Model total parameters: 2704642
+2022-01-31 16:29:22,885:__main__:INFO: Starting epoch 1
+2022-01-31 16:36:00,505:__main__:INFO: Args: Namespace(train_file='data/small-train.json', val_file='data/small-val.json', train_from='', sp_model='', fixed_stack=True, strategy='top_down', w_dim=256, h_dim=256, num_nts=26, num_layers=2, dropout=0.3, composition='lstm', not_swap_in_order_stack=False, batch_group='similar_length', max_group_length_diff=20, group_sentence_size=1024, optimizer='adam', lr_scheduler=None, plateau_lr_decay=0.5, plateau_lr_patience=1, warmup_steps=10000, random_unk=False, batch_size=16, batch_token_size=15000, batch_action_size=45000, save_path='rnng_small1_31a.pt', num_epochs=18, min_epochs=8, lr=0.001, loss_normalize='batch', param_init=0, max_grad_norm=5, gpu=0, device='cuda', seed=3435, print_every=500, valid_every=-1, tensorboard_log_dir='', amp=False, early_stop=False, early_stop_patience=5)
+2022-01-31 16:36:00,544:__main__:INFO: Train: 1375 sents / 0 batches, Val: 228 sents / 48 batches
+2022-01-31 16:36:00,544:__main__:INFO: Vocab size: 1509
+2022-01-31 16:36:01,765:__main__:INFO: model architecture
+2022-01-31 16:36:01,766:__main__:INFO: FixedStackRNNG(
+  (action_criterion): CrossEntropyLoss()
+  (word_criterion): CrossEntropyLoss()
+  (dropout): Dropout(p=0.3, inplace=True)
+  (emb): Sequential(
+    (0): Embedding(1509, 256, padding_idx=0)
+    (1): Dropout(p=0.3, inplace=True)
+  )
+  (rnng): RNNGCell(
+    (dropout): Dropout(p=0.3, inplace=True)
+    (nt_emb): Sequential(
+      (0): Embedding(26, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+    (stack_rnn): MultiLayerLSTMCell(
+      (lstm): ModuleList(
+        (0): LSTMCell(256, 256)
+        (1): LSTMCell(256, 256)
+      )
+      (dropout_layer): Dropout(p=0.3, inplace=True)
+    )
+    (output): Sequential(
+      (0): Dropout(p=0.3, inplace=True)
+      (1): Linear(in_features=256, out_features=256, bias=True)
+      (2): ReLU()
+    )
+    (composition): LSTMComposition(
+      (rnn): LSTM(256, 256, batch_first=True, bidirectional=True)
+      (output): Sequential(
+        (0): Dropout(p=0.3, inplace=True)
+        (1): Linear(in_features=512, out_features=256, bias=True)
+        (2): ReLU()
+      )
+    )
+    (initial_emb): Sequential(
+      (0): Embedding(1, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+  )
+  (vocab_mlp): Linear(in_features=256, out_features=1509, bias=True)
+  (action_mlp): Linear(in_features=256, out_features=29, bias=True)
+)
+2022-01-31 16:36:01,767:__main__:INFO: Model total parameters: 2704642
+2022-01-31 16:36:01,767:__main__:INFO: Starting epoch 1
+2022-01-31 16:48:38,216:__main__:INFO: Args: Namespace(train_file='data/small-train.json', val_file='data/small-val.json', train_from='', sp_model='', fixed_stack=True, strategy='top_down', w_dim=256, h_dim=256, num_nts=26, num_layers=2, dropout=0.3, composition='lstm', not_swap_in_order_stack=False, batch_group='similar_length', max_group_length_diff=20, group_sentence_size=1024, optimizer='adam', lr_scheduler=None, plateau_lr_decay=0.5, plateau_lr_patience=1, warmup_steps=10000, random_unk=False, batch_size=16, batch_token_size=15000, batch_action_size=45000, save_path='rnng_small1_31a.pt', num_epochs=18, min_epochs=8, lr=0.001, loss_normalize='batch', param_init=0, max_grad_norm=5, gpu=0, device='cuda', seed=3435, print_every=500, valid_every=-1, tensorboard_log_dir='', amp=False, early_stop=False, early_stop_patience=5)
+2022-01-31 16:48:38,254:__main__:INFO: Train: 1375 sents / 0 batches, Val: 228 sents / 48 batches
+2022-01-31 16:48:38,254:__main__:INFO: Vocab size: 1509
+2022-01-31 16:48:39,481:__main__:INFO: model architecture
+2022-01-31 16:48:39,483:__main__:INFO: FixedStackRNNG(
+  (action_criterion): CrossEntropyLoss()
+  (word_criterion): CrossEntropyLoss()
+  (dropout): Dropout(p=0.3, inplace=True)
+  (emb): Sequential(
+    (0): Embedding(1509, 256, padding_idx=0)
+    (1): Dropout(p=0.3, inplace=True)
+  )
+  (rnng): RNNGCell(
+    (dropout): Dropout(p=0.3, inplace=True)
+    (nt_emb): Sequential(
+      (0): Embedding(26, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+    (stack_rnn): MultiLayerLSTMCell(
+      (lstm): ModuleList(
+        (0): LSTMCell(256, 256)
+        (1): LSTMCell(256, 256)
+      )
+      (dropout_layer): Dropout(p=0.3, inplace=True)
+    )
+    (output): Sequential(
+      (0): Dropout(p=0.3, inplace=True)
+      (1): Linear(in_features=256, out_features=256, bias=True)
+      (2): ReLU()
+    )
+    (composition): LSTMComposition(
+      (rnn): LSTM(256, 256, batch_first=True, bidirectional=True)
+      (output): Sequential(
+        (0): Dropout(p=0.3, inplace=True)
+        (1): Linear(in_features=512, out_features=256, bias=True)
+        (2): ReLU()
+      )
+    )
+    (initial_emb): Sequential(
+      (0): Embedding(1, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+  )
+  (vocab_mlp): Linear(in_features=256, out_features=1509, bias=True)
+  (action_mlp): Linear(in_features=256, out_features=29, bias=True)
+)
+2022-01-31 16:48:39,483:__main__:INFO: Model total parameters: 2704642
+2022-01-31 16:48:39,484:__main__:INFO: Starting epoch 1
+2022-01-31 16:53:55,187:__main__:INFO: Args: Namespace(train_file='data/small-train.json', val_file='data/small-val.json', train_from='', sp_model='', fixed_stack=True, strategy='top_down', w_dim=256, h_dim=256, num_nts=26, num_layers=2, dropout=0.3, composition='lstm', not_swap_in_order_stack=False, batch_group='similar_length', max_group_length_diff=20, group_sentence_size=1024, optimizer='adam', lr_scheduler=None, plateau_lr_decay=0.5, plateau_lr_patience=1, warmup_steps=10000, random_unk=False, batch_size=16, batch_token_size=15000, batch_action_size=45000, save_path='rnng_small1_31a.pt', num_epochs=18, min_epochs=8, lr=0.001, loss_normalize='batch', param_init=0, max_grad_norm=5, gpu=0, device='cuda', seed=3435, print_every=500, valid_every=-1, tensorboard_log_dir='', amp=False, early_stop=False, early_stop_patience=5)
+2022-01-31 16:53:55,225:__main__:INFO: Train: 1375 sents / 0 batches, Val: 228 sents / 48 batches
+2022-01-31 16:53:55,226:__main__:INFO: Vocab size: 1509
+2022-01-31 16:53:56,448:__main__:INFO: model architecture
+2022-01-31 16:53:56,448:__main__:INFO: FixedStackRNNG(
+  (action_criterion): CrossEntropyLoss()
+  (word_criterion): CrossEntropyLoss()
+  (dropout): Dropout(p=0.3, inplace=True)
+  (emb): Sequential(
+    (0): Embedding(1509, 256, padding_idx=0)
+    (1): Dropout(p=0.3, inplace=True)
+  )
+  (rnng): RNNGCell(
+    (dropout): Dropout(p=0.3, inplace=True)
+    (nt_emb): Sequential(
+      (0): Embedding(26, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+    (stack_rnn): MultiLayerLSTMCell(
+      (lstm): ModuleList(
+        (0): LSTMCell(256, 256)
+        (1): LSTMCell(256, 256)
+      )
+      (dropout_layer): Dropout(p=0.3, inplace=True)
+    )
+    (output): Sequential(
+      (0): Dropout(p=0.3, inplace=True)
+      (1): Linear(in_features=256, out_features=256, bias=True)
+      (2): ReLU()
+    )
+    (composition): LSTMComposition(
+      (rnn): LSTM(256, 256, batch_first=True, bidirectional=True)
+      (output): Sequential(
+        (0): Dropout(p=0.3, inplace=True)
+        (1): Linear(in_features=512, out_features=256, bias=True)
+        (2): ReLU()
+      )
+    )
+    (initial_emb): Sequential(
+      (0): Embedding(1, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+  )
+  (vocab_mlp): Linear(in_features=256, out_features=1509, bias=True)
+  (action_mlp): Linear(in_features=256, out_features=29, bias=True)
+)
+2022-01-31 16:53:56,449:__main__:INFO: Model total parameters: 2704642
+2022-01-31 16:53:56,449:__main__:INFO: Starting epoch 1
+2022-01-31 16:54:51,102:__main__:INFO: Args: Namespace(train_file='data/small-train.json', val_file='data/small-val.json', train_from='', sp_model='', fixed_stack=True, strategy='top_down', w_dim=256, h_dim=256, num_nts=26, num_layers=2, dropout=0.3, composition='lstm', not_swap_in_order_stack=False, batch_group='similar_length', max_group_length_diff=20, group_sentence_size=1024, optimizer='adam', lr_scheduler=None, plateau_lr_decay=0.5, plateau_lr_patience=1, warmup_steps=10000, random_unk=False, batch_size=16, batch_token_size=15000, batch_action_size=45000, save_path='rnng_small1_31a.pt', num_epochs=18, min_epochs=8, lr=0.001, loss_normalize='batch', param_init=0, max_grad_norm=5, gpu=0, device='cuda', seed=3435, print_every=500, valid_every=-1, tensorboard_log_dir='', amp=False, early_stop=False, early_stop_patience=5)
+2022-01-31 16:54:51,140:__main__:INFO: Train: 1375 sents / 0 batches, Val: 228 sents / 48 batches
+2022-01-31 16:54:51,140:__main__:INFO: Vocab size: 1509
+2022-01-31 16:54:52,365:__main__:INFO: model architecture
+2022-01-31 16:54:52,365:__main__:INFO: FixedStackRNNG(
+  (action_criterion): CrossEntropyLoss()
+  (word_criterion): CrossEntropyLoss()
+  (dropout): Dropout(p=0.3, inplace=True)
+  (emb): Sequential(
+    (0): Embedding(1509, 256, padding_idx=0)
+    (1): Dropout(p=0.3, inplace=True)
+  )
+  (rnng): RNNGCell(
+    (dropout): Dropout(p=0.3, inplace=True)
+    (nt_emb): Sequential(
+      (0): Embedding(26, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+    (stack_rnn): MultiLayerLSTMCell(
+      (lstm): ModuleList(
+        (0): LSTMCell(256, 256)
+        (1): LSTMCell(256, 256)
+      )
+      (dropout_layer): Dropout(p=0.3, inplace=True)
+    )
+    (output): Sequential(
+      (0): Dropout(p=0.3, inplace=True)
+      (1): Linear(in_features=256, out_features=256, bias=True)
+      (2): ReLU()
+    )
+    (composition): LSTMComposition(
+      (rnn): LSTM(256, 256, batch_first=True, bidirectional=True)
+      (output): Sequential(
+        (0): Dropout(p=0.3, inplace=True)
+        (1): Linear(in_features=512, out_features=256, bias=True)
+        (2): ReLU()
+      )
+    )
+    (initial_emb): Sequential(
+      (0): Embedding(1, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+  )
+  (vocab_mlp): Linear(in_features=256, out_features=1509, bias=True)
+  (action_mlp): Linear(in_features=256, out_features=29, bias=True)
+)
+2022-01-31 16:54:52,366:__main__:INFO: Model total parameters: 2704642
+2022-01-31 16:54:52,366:__main__:INFO: Starting epoch 1
+2022-01-31 17:00:35,169:__main__:INFO: Args: Namespace(train_file='data/small-train.json', val_file='data/small-val.json', train_from='', sp_model='', fixed_stack=True, strategy='top_down', w_dim=256, h_dim=256, num_nts=26, num_layers=2, dropout=0.3, composition='lstm', not_swap_in_order_stack=False, batch_group='similar_length', max_group_length_diff=20, group_sentence_size=1024, optimizer='adam', lr_scheduler=None, plateau_lr_decay=0.5, plateau_lr_patience=1, warmup_steps=10000, random_unk=False, batch_size=16, batch_token_size=15000, batch_action_size=45000, save_path='rnng_small1_31a.pt', num_epochs=18, min_epochs=8, lr=0.001, loss_normalize='batch', param_init=0, max_grad_norm=5, gpu=0, device='cuda', seed=3435, print_every=500, valid_every=-1, tensorboard_log_dir='', amp=False, early_stop=False, early_stop_patience=5)
+2022-01-31 17:00:35,207:__main__:INFO: Train: 1375 sents / 0 batches, Val: 228 sents / 48 batches
+2022-01-31 17:00:35,207:__main__:INFO: Vocab size: 1509
+2022-01-31 17:00:36,422:__main__:INFO: model architecture
+2022-01-31 17:00:36,422:__main__:INFO: FixedStackRNNG(
+  (action_criterion): CrossEntropyLoss()
+  (word_criterion): CrossEntropyLoss()
+  (dropout): Dropout(p=0.3, inplace=True)
+  (emb): Sequential(
+    (0): Embedding(1509, 256, padding_idx=0)
+    (1): Dropout(p=0.3, inplace=True)
+  )
+  (rnng): RNNGCell(
+    (dropout): Dropout(p=0.3, inplace=True)
+    (nt_emb): Sequential(
+      (0): Embedding(26, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+    (stack_rnn): MultiLayerLSTMCell(
+      (lstm): ModuleList(
+        (0): LSTMCell(256, 256)
+        (1): LSTMCell(256, 256)
+      )
+      (dropout_layer): Dropout(p=0.3, inplace=True)
+    )
+    (output): Sequential(
+      (0): Dropout(p=0.3, inplace=True)
+      (1): Linear(in_features=256, out_features=256, bias=True)
+      (2): ReLU()
+    )
+    (composition): LSTMComposition(
+      (rnn): LSTM(256, 256, batch_first=True, bidirectional=True)
+      (output): Sequential(
+        (0): Dropout(p=0.3, inplace=True)
+        (1): Linear(in_features=512, out_features=256, bias=True)
+        (2): ReLU()
+      )
+    )
+    (initial_emb): Sequential(
+      (0): Embedding(1, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+  )
+  (vocab_mlp): Linear(in_features=256, out_features=1509, bias=True)
+  (action_mlp): Linear(in_features=256, out_features=29, bias=True)
+)
+2022-01-31 17:00:36,423:__main__:INFO: Model total parameters: 2704642
+2022-01-31 17:00:36,423:__main__:INFO: Starting epoch 1
+2022-01-31 17:05:22,219:__main__:INFO: Args: Namespace(train_file='data/small-train.json', val_file='data/small-val.json', train_from='', sp_model='', fixed_stack=True, strategy='top_down', w_dim=256, h_dim=256, num_nts=26, num_layers=2, dropout=0.3, composition='lstm', not_swap_in_order_stack=False, batch_group='similar_length', max_group_length_diff=20, group_sentence_size=1024, optimizer='adam', lr_scheduler=None, plateau_lr_decay=0.5, plateau_lr_patience=1, warmup_steps=10000, random_unk=False, batch_size=16, batch_token_size=15000, batch_action_size=45000, save_path='rnng_small1_31a.pt', num_epochs=18, min_epochs=8, lr=0.001, loss_normalize='batch', param_init=0, max_grad_norm=5, gpu=0, device='cuda', seed=3435, print_every=500, valid_every=-1, tensorboard_log_dir='', amp=False, early_stop=False, early_stop_patience=5)
+2022-01-31 17:05:22,257:__main__:INFO: Train: 1375 sents / 0 batches, Val: 228 sents / 48 batches
+2022-01-31 17:05:22,257:__main__:INFO: Vocab size: 1509
+2022-01-31 17:05:23,480:__main__:INFO: model architecture
+2022-01-31 17:05:23,481:__main__:INFO: FixedStackRNNG(
+  (action_criterion): CrossEntropyLoss()
+  (word_criterion): CrossEntropyLoss()
+  (dropout): Dropout(p=0.3, inplace=True)
+  (emb): Sequential(
+    (0): Embedding(1509, 256, padding_idx=0)
+    (1): Dropout(p=0.3, inplace=True)
+  )
+  (rnng): RNNGCell(
+    (dropout): Dropout(p=0.3, inplace=True)
+    (nt_emb): Sequential(
+      (0): Embedding(26, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+    (stack_rnn): MultiLayerLSTMCell(
+      (lstm): ModuleList(
+        (0): LSTMCell(256, 256)
+        (1): LSTMCell(256, 256)
+      )
+      (dropout_layer): Dropout(p=0.3, inplace=True)
+    )
+    (output): Sequential(
+      (0): Dropout(p=0.3, inplace=True)
+      (1): Linear(in_features=256, out_features=256, bias=True)
+      (2): ReLU()
+    )
+    (composition): LSTMComposition(
+      (rnn): LSTM(256, 256, batch_first=True, bidirectional=True)
+      (output): Sequential(
+        (0): Dropout(p=0.3, inplace=True)
+        (1): Linear(in_features=512, out_features=256, bias=True)
+        (2): ReLU()
+      )
+    )
+    (initial_emb): Sequential(
+      (0): Embedding(1, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+  )
+  (vocab_mlp): Linear(in_features=256, out_features=1509, bias=True)
+  (action_mlp): Linear(in_features=256, out_features=29, bias=True)
+)
+2022-01-31 17:05:23,481:__main__:INFO: Model total parameters: 2704642
+2022-01-31 17:05:23,482:__main__:INFO: Starting epoch 1
+2022-01-31 17:09:35,629:__main__:INFO: Epoch: 1, Batch: 87/87, LR: 0.0010, ActionPPL: 5.24, WordPPL: 586.21, PPL: 47.392012, LL: 159516.19274902344, |Param|: 627.61, E[batch size]: 15.804597701149426, Throughput: 5.45 examples/sec
+2022-01-31 17:09:35,629:__main__:INFO: --------------------------------
+2022-01-31 17:09:35,629:__main__:INFO: Checking validation perplexity...
+2022-01-31 17:10:06,190:__main__:INFO: Args: Namespace(train_file='data/small-train.json', val_file='data/small-val.json', train_from='', sp_model='', fixed_stack=True, strategy='top_down', w_dim=256, h_dim=256, num_nts=26, num_layers=2, dropout=0.3, composition='lstm', not_swap_in_order_stack=False, batch_group='similar_length', max_group_length_diff=20, group_sentence_size=1024, optimizer='adam', lr_scheduler=None, plateau_lr_decay=0.5, plateau_lr_patience=1, warmup_steps=10000, random_unk=False, batch_size=16, batch_token_size=15000, batch_action_size=45000, save_path='rnng_small1_31a.pt', num_epochs=18, min_epochs=8, lr=0.001, loss_normalize='batch', param_init=0, max_grad_norm=5, gpu=0, device='cuda', seed=3435, print_every=500, valid_every=-1, tensorboard_log_dir='', amp=False, early_stop=False, early_stop_patience=5)
+2022-01-31 17:10:06,228:__main__:INFO: Train: 1375 sents / 0 batches, Val: 228 sents / 48 batches
+2022-01-31 17:10:06,228:__main__:INFO: Vocab size: 1509
+2022-01-31 17:10:07,456:__main__:INFO: model architecture
+2022-01-31 17:10:07,456:__main__:INFO: FixedStackRNNG(
+  (action_criterion): CrossEntropyLoss()
+  (word_criterion): CrossEntropyLoss()
+  (dropout): Dropout(p=0.3, inplace=True)
+  (emb): Sequential(
+    (0): Embedding(1509, 256, padding_idx=0)
+    (1): Dropout(p=0.3, inplace=True)
+  )
+  (rnng): RNNGCell(
+    (dropout): Dropout(p=0.3, inplace=True)
+    (nt_emb): Sequential(
+      (0): Embedding(26, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+    (stack_rnn): MultiLayerLSTMCell(
+      (lstm): ModuleList(
+        (0): LSTMCell(256, 256)
+        (1): LSTMCell(256, 256)
+      )
+      (dropout_layer): Dropout(p=0.3, inplace=True)
+    )
+    (output): Sequential(
+      (0): Dropout(p=0.3, inplace=True)
+      (1): Linear(in_features=256, out_features=256, bias=True)
+      (2): ReLU()
+    )
+    (composition): LSTMComposition(
+      (rnn): LSTM(256, 256, batch_first=True, bidirectional=True)
+      (output): Sequential(
+        (0): Dropout(p=0.3, inplace=True)
+        (1): Linear(in_features=512, out_features=256, bias=True)
+        (2): ReLU()
+      )
+    )
+    (initial_emb): Sequential(
+      (0): Embedding(1, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+  )
+  (vocab_mlp): Linear(in_features=256, out_features=1509, bias=True)
+  (action_mlp): Linear(in_features=256, out_features=29, bias=True)
+)
+2022-01-31 17:10:07,457:__main__:INFO: Model total parameters: 2704642
+2022-01-31 17:10:07,457:__main__:INFO: Starting epoch 1
+2022-01-31 17:11:30,448:__main__:INFO: Args: Namespace(train_file='data/small-train.json', val_file='data/small-val.json', train_from='', sp_model='', fixed_stack=True, strategy='top_down', w_dim=256, h_dim=256, num_nts=26, num_layers=2, dropout=0.3, composition='lstm', not_swap_in_order_stack=False, batch_group='similar_length', max_group_length_diff=20, group_sentence_size=1024, optimizer='adam', lr_scheduler=None, plateau_lr_decay=0.5, plateau_lr_patience=1, warmup_steps=10000, random_unk=False, batch_size=16, batch_token_size=15000, batch_action_size=45000, save_path='rnng_small1_31a.pt', num_epochs=18, min_epochs=8, lr=0.001, loss_normalize='batch', param_init=0, max_grad_norm=5, gpu=0, device='cuda', seed=3435, print_every=500, valid_every=-1, tensorboard_log_dir='', amp=False, early_stop=False, early_stop_patience=5)
+2022-01-31 17:11:30,487:__main__:INFO: Train: 1375 sents / 0 batches, Val: 228 sents / 48 batches
+2022-01-31 17:11:30,487:__main__:INFO: Vocab size: 1509
+2022-01-31 17:11:31,714:__main__:INFO: model architecture
+2022-01-31 17:11:31,714:__main__:INFO: FixedStackRNNG(
+  (action_criterion): CrossEntropyLoss()
+  (word_criterion): CrossEntropyLoss()
+  (dropout): Dropout(p=0.3, inplace=True)
+  (emb): Sequential(
+    (0): Embedding(1509, 256, padding_idx=0)
+    (1): Dropout(p=0.3, inplace=True)
+  )
+  (rnng): RNNGCell(
+    (dropout): Dropout(p=0.3, inplace=True)
+    (nt_emb): Sequential(
+      (0): Embedding(26, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+    (stack_rnn): MultiLayerLSTMCell(
+      (lstm): ModuleList(
+        (0): LSTMCell(256, 256)
+        (1): LSTMCell(256, 256)
+      )
+      (dropout_layer): Dropout(p=0.3, inplace=True)
+    )
+    (output): Sequential(
+      (0): Dropout(p=0.3, inplace=True)
+      (1): Linear(in_features=256, out_features=256, bias=True)
+      (2): ReLU()
+    )
+    (composition): LSTMComposition(
+      (rnn): LSTM(256, 256, batch_first=True, bidirectional=True)
+      (output): Sequential(
+        (0): Dropout(p=0.3, inplace=True)
+        (1): Linear(in_features=512, out_features=256, bias=True)
+        (2): ReLU()
+      )
+    )
+    (initial_emb): Sequential(
+      (0): Embedding(1, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+  )
+  (vocab_mlp): Linear(in_features=256, out_features=1509, bias=True)
+  (action_mlp): Linear(in_features=256, out_features=29, bias=True)
+)
+2022-01-31 17:11:31,715:__main__:INFO: Model total parameters: 2704642
+2022-01-31 17:11:31,715:__main__:INFO: Starting epoch 1
+2022-01-31 17:15:43,357:__main__:INFO: Epoch: 1, Batch: 87/87, LR: 0.0010, ActionPPL: 5.28, WordPPL: 588.99, PPL: 47.696681, LL: 159781.11728668213, |Param|: 627.61, E[batch size]: 15.804597701149426, Throughput: 5.46 examples/sec
+2022-01-31 17:15:43,357:__main__:INFO: --------------------------------
+2022-01-31 17:15:43,357:__main__:INFO: Checking validation perplexity...
+2022-01-31 17:24:39,562:__main__:INFO: Args: Namespace(train_file='data/small-train.json', val_file='data/small-val.json', train_from='', sp_model='', fixed_stack=True, strategy='top_down', w_dim=256, h_dim=256, num_nts=26, num_layers=2, dropout=0.3, composition='lstm', not_swap_in_order_stack=False, batch_group='similar_length', max_group_length_diff=20, group_sentence_size=1024, optimizer='adam', lr_scheduler=None, plateau_lr_decay=0.5, plateau_lr_patience=1, warmup_steps=10000, random_unk=False, batch_size=16, batch_token_size=15000, batch_action_size=45000, save_path='rnng_small1_31a.pt', num_epochs=18, min_epochs=8, lr=0.001, loss_normalize='batch', param_init=0, max_grad_norm=5, gpu=0, device='cuda', seed=3435, print_every=500, valid_every=-1, tensorboard_log_dir='', amp=False, early_stop=False, early_stop_patience=5)
+2022-01-31 17:24:39,600:__main__:INFO: Train: 1375 sents / 0 batches, Val: 228 sents / 48 batches
+2022-01-31 17:24:39,600:__main__:INFO: Vocab size: 1509
+2022-01-31 17:24:40,836:__main__:INFO: model architecture
+2022-01-31 17:24:40,837:__main__:INFO: FixedStackRNNG(
+  (action_criterion): CrossEntropyLoss()
+  (word_criterion): CrossEntropyLoss()
+  (dropout): Dropout(p=0.3, inplace=True)
+  (emb): Sequential(
+    (0): Embedding(1509, 256, padding_idx=0)
+    (1): Dropout(p=0.3, inplace=True)
+  )
+  (rnng): RNNGCell(
+    (dropout): Dropout(p=0.3, inplace=True)
+    (nt_emb): Sequential(
+      (0): Embedding(26, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+    (stack_rnn): MultiLayerLSTMCell(
+      (lstm): ModuleList(
+        (0): LSTMCell(256, 256)
+        (1): LSTMCell(256, 256)
+      )
+      (dropout_layer): Dropout(p=0.3, inplace=True)
+    )
+    (output): Sequential(
+      (0): Dropout(p=0.3, inplace=True)
+      (1): Linear(in_features=256, out_features=256, bias=True)
+      (2): ReLU()
+    )
+    (composition): LSTMComposition(
+      (rnn): LSTM(256, 256, batch_first=True, bidirectional=True)
+      (output): Sequential(
+        (0): Dropout(p=0.3, inplace=True)
+        (1): Linear(in_features=512, out_features=256, bias=True)
+        (2): ReLU()
+      )
+    )
+    (initial_emb): Sequential(
+      (0): Embedding(1, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+  )
+  (vocab_mlp): Linear(in_features=256, out_features=1509, bias=True)
+  (action_mlp): Linear(in_features=256, out_features=29, bias=True)
+)
+2022-01-31 17:24:40,837:__main__:INFO: Model total parameters: 2704642
+2022-01-31 17:24:40,838:__main__:INFO: Starting epoch 1
+2022-01-31 17:28:52,342:__main__:INFO: Epoch: 1, Batch: 87/87, LR: 0.0010, ActionPPL: 5.25, WordPPL: 582.35, PPL: 47.256374, LL: 159397.7003479004, |Param|: 627.61, E[batch size]: 15.804597701149426, Throughput: 5.47 examples/sec
+2022-01-31 17:28:52,342:__main__:INFO: --------------------------------
+2022-01-31 17:28:52,342:__main__:INFO: Checking validation perplexity...
+2022-01-31 17:33:11,621:__main__:INFO: Args: Namespace(train_file='data/small-train.json', val_file='data/small-val.json', train_from='', sp_model='', fixed_stack=True, strategy='top_down', w_dim=256, h_dim=256, num_nts=26, num_layers=2, dropout=0.3, composition='lstm', not_swap_in_order_stack=False, batch_group='similar_length', max_group_length_diff=20, group_sentence_size=1024, optimizer='adam', lr_scheduler=None, plateau_lr_decay=0.5, plateau_lr_patience=1, warmup_steps=10000, random_unk=False, batch_size=16, batch_token_size=15000, batch_action_size=45000, save_path='rnng_small1_31a.pt', num_epochs=18, min_epochs=8, lr=0.001, loss_normalize='batch', param_init=0, max_grad_norm=5, gpu=0, device='cuda', seed=3435, print_every=500, valid_every=-1, tensorboard_log_dir='', amp=False, early_stop=False, early_stop_patience=5)
+2022-01-31 17:33:11,659:__main__:INFO: Train: 1375 sents / 0 batches, Val: 228 sents / 48 batches
+2022-01-31 17:33:11,659:__main__:INFO: Vocab size: 1509
+2022-01-31 17:33:12,881:__main__:INFO: model architecture
+2022-01-31 17:33:12,881:__main__:INFO: FixedStackRNNG(
+  (action_criterion): CrossEntropyLoss()
+  (word_criterion): CrossEntropyLoss()
+  (dropout): Dropout(p=0.3, inplace=True)
+  (emb): Sequential(
+    (0): Embedding(1509, 256, padding_idx=0)
+    (1): Dropout(p=0.3, inplace=True)
+  )
+  (rnng): RNNGCell(
+    (dropout): Dropout(p=0.3, inplace=True)
+    (nt_emb): Sequential(
+      (0): Embedding(26, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+    (stack_rnn): MultiLayerLSTMCell(
+      (lstm): ModuleList(
+        (0): LSTMCell(256, 256)
+        (1): LSTMCell(256, 256)
+      )
+      (dropout_layer): Dropout(p=0.3, inplace=True)
+    )
+    (output): Sequential(
+      (0): Dropout(p=0.3, inplace=True)
+      (1): Linear(in_features=256, out_features=256, bias=True)
+      (2): ReLU()
+    )
+    (composition): LSTMComposition(
+      (rnn): LSTM(256, 256, batch_first=True, bidirectional=True)
+      (output): Sequential(
+        (0): Dropout(p=0.3, inplace=True)
+        (1): Linear(in_features=512, out_features=256, bias=True)
+        (2): ReLU()
+      )
+    )
+    (initial_emb): Sequential(
+      (0): Embedding(1, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+  )
+  (vocab_mlp): Linear(in_features=256, out_features=1509, bias=True)
+  (action_mlp): Linear(in_features=256, out_features=29, bias=True)
+)
+2022-01-31 17:33:12,882:__main__:INFO: Model total parameters: 2704642
+2022-01-31 17:33:12,882:__main__:INFO: Starting epoch 1
+2022-01-31 17:37:24,808:__main__:INFO: Epoch: 1, Batch: 87/87, LR: 0.0010, ActionPPL: 5.23, WordPPL: 591.69, PPL: 47.532214, LL: 159638.3159790039, |Param|: 627.61, E[batch size]: 15.804597701149426, Throughput: 5.46 examples/sec
+2022-01-31 17:37:24,808:__main__:INFO: Starting epoch 2
+2022-01-31 17:40:00,559:__main__:INFO: Args: Namespace(train_file='data/small-train.json', val_file='data/small-val.json', train_from='', sp_model='', fixed_stack=True, strategy='top_down', w_dim=256, h_dim=256, num_nts=26, num_layers=2, dropout=0.3, composition='lstm', not_swap_in_order_stack=False, batch_group='similar_length', max_group_length_diff=20, group_sentence_size=1024, optimizer='adam', lr_scheduler=None, plateau_lr_decay=0.5, plateau_lr_patience=1, warmup_steps=10000, random_unk=False, batch_size=16, batch_token_size=15000, batch_action_size=45000, save_path='rnng_small1_31a.pt', num_epochs=18, min_epochs=8, lr=0.001, loss_normalize='batch', param_init=0, max_grad_norm=5, gpu=0, device='cuda', seed=3435, print_every=500, valid_every=-1, tensorboard_log_dir='', amp=False, early_stop=False, early_stop_patience=5)
+2022-01-31 17:40:00,597:__main__:INFO: Train: 1375 sents / 0 batches, Val: 228 sents / 48 batches
+2022-01-31 17:40:00,598:__main__:INFO: Vocab size: 1509
+2022-01-31 17:40:01,842:__main__:INFO: model architecture
+2022-01-31 17:40:01,843:__main__:INFO: FixedStackRNNG(
+  (action_criterion): CrossEntropyLoss()
+  (word_criterion): CrossEntropyLoss()
+  (dropout): Dropout(p=0.3, inplace=True)
+  (emb): Sequential(
+    (0): Embedding(1509, 256, padding_idx=0)
+    (1): Dropout(p=0.3, inplace=True)
+  )
+  (rnng): RNNGCell(
+    (dropout): Dropout(p=0.3, inplace=True)
+    (nt_emb): Sequential(
+      (0): Embedding(26, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+    (stack_rnn): MultiLayerLSTMCell(
+      (lstm): ModuleList(
+        (0): LSTMCell(256, 256)
+        (1): LSTMCell(256, 256)
+      )
+      (dropout_layer): Dropout(p=0.3, inplace=True)
+    )
+    (output): Sequential(
+      (0): Dropout(p=0.3, inplace=True)
+      (1): Linear(in_features=256, out_features=256, bias=True)
+      (2): ReLU()
+    )
+    (composition): LSTMComposition(
+      (rnn): LSTM(256, 256, batch_first=True, bidirectional=True)
+      (output): Sequential(
+        (0): Dropout(p=0.3, inplace=True)
+        (1): Linear(in_features=512, out_features=256, bias=True)
+        (2): ReLU()
+      )
+    )
+    (initial_emb): Sequential(
+      (0): Embedding(1, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+  )
+  (vocab_mlp): Linear(in_features=256, out_features=1509, bias=True)
+  (action_mlp): Linear(in_features=256, out_features=29, bias=True)
+)
+2022-01-31 17:40:01,843:__main__:INFO: Model total parameters: 2704642
+2022-01-31 17:40:01,844:__main__:INFO: Starting epoch 1
+2022-01-31 17:44:12,402:__main__:INFO: Epoch: 1, Batch: 87/87, LR: 0.0010, ActionPPL: 5.13, WordPPL: 599.35, PPL: 47.322655, LL: 159455.64518737793, |Param|: 627.61, E[batch size]: 15.804597701149426, Throughput: 5.49 examples/sec
+2022-01-31 17:44:12,403:__main__:INFO: --------------------------------
+2022-01-31 17:44:12,403:__main__:INFO: Checking validation perplexity...
+2022-01-31 17:52:01,176:__main__:INFO: Args: Namespace(train_file='data/small-train.json', val_file='data/small-val.json', train_from='', sp_model='', fixed_stack=True, strategy='top_down', w_dim=256, h_dim=256, num_nts=26, num_layers=2, dropout=0.3, composition='lstm', not_swap_in_order_stack=False, batch_group='similar_length', max_group_length_diff=20, group_sentence_size=1024, optimizer='adam', lr_scheduler=None, plateau_lr_decay=0.5, plateau_lr_patience=1, warmup_steps=10000, random_unk=False, batch_size=16, batch_token_size=15000, batch_action_size=45000, save_path='rnng_small1_31a.pt', num_epochs=18, min_epochs=8, lr=0.001, loss_normalize='batch', param_init=0, max_grad_norm=5, gpu=0, device='cuda', seed=3435, print_every=500, valid_every=-1, tensorboard_log_dir='', amp=False, early_stop=False, early_stop_patience=5)
+2022-01-31 17:52:01,214:__main__:INFO: Train: 1375 sents / 0 batches, Val: 228 sents / 48 batches
+2022-01-31 17:52:01,214:__main__:INFO: Vocab size: 1509
+2022-01-31 17:52:02,444:__main__:INFO: model architecture
+2022-01-31 17:52:02,444:__main__:INFO: FixedStackRNNG(
+  (action_criterion): CrossEntropyLoss()
+  (word_criterion): CrossEntropyLoss()
+  (dropout): Dropout(p=0.3, inplace=True)
+  (emb): Sequential(
+    (0): Embedding(1509, 256, padding_idx=0)
+    (1): Dropout(p=0.3, inplace=True)
+  )
+  (rnng): RNNGCell(
+    (dropout): Dropout(p=0.3, inplace=True)
+    (nt_emb): Sequential(
+      (0): Embedding(26, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+    (stack_rnn): MultiLayerLSTMCell(
+      (lstm): ModuleList(
+        (0): LSTMCell(256, 256)
+        (1): LSTMCell(256, 256)
+      )
+      (dropout_layer): Dropout(p=0.3, inplace=True)
+    )
+    (output): Sequential(
+      (0): Dropout(p=0.3, inplace=True)
+      (1): Linear(in_features=256, out_features=256, bias=True)
+      (2): ReLU()
+    )
+    (composition): LSTMComposition(
+      (rnn): LSTM(256, 256, batch_first=True, bidirectional=True)
+      (output): Sequential(
+        (0): Dropout(p=0.3, inplace=True)
+        (1): Linear(in_features=512, out_features=256, bias=True)
+        (2): ReLU()
+      )
+    )
+    (initial_emb): Sequential(
+      (0): Embedding(1, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+  )
+  (vocab_mlp): Linear(in_features=256, out_features=1509, bias=True)
+  (action_mlp): Linear(in_features=256, out_features=29, bias=True)
+)
+2022-01-31 17:52:02,445:__main__:INFO: Model total parameters: 2704642
+2022-01-31 17:52:02,445:__main__:INFO: Starting epoch 1
+2022-01-31 17:56:13,172:__main__:INFO: Epoch: 1, Batch: 87/87, LR: 0.0010, ActionPPL: 5.18, WordPPL: 587.32, PPL: 47.135325, LL: 159291.6653289795, |Param|: 627.61, E[batch size]: 15.804597701149426, Throughput: 5.48 examples/sec
+2022-01-31 17:56:13,173:__main__:INFO: Saving checkpoint to rnng_small1_31a.pt
+2022-01-31 23:19:36,233:__main__:INFO: Args: Namespace(train_file='data/small-train.json', val_file='data/small-val.json', train_from='', sp_model='', fixed_stack=True, strategy='top_down', w_dim=256, h_dim=256, num_nts=26, num_layers=2, dropout=0.3, composition='lstm', not_swap_in_order_stack=False, batch_group='similar_length', max_group_length_diff=20, group_sentence_size=1024, optimizer='adam', lr_scheduler=None, plateau_lr_decay=0.5, plateau_lr_patience=1, warmup_steps=10000, random_unk=False, batch_size=16, batch_token_size=15000, batch_action_size=45000, save_path='rnng_small1_31a.pt', num_epochs=18, min_epochs=8, lr=0.001, loss_normalize='batch', param_init=0, max_grad_norm=5, gpu=0, device='cuda', seed=3435, print_every=500, valid_every=-1, tensorboard_log_dir='', amp=False, early_stop=False, early_stop_patience=5)
+2022-01-31 23:19:36,271:__main__:INFO: Train: 1375 sents
+2022-01-31 23:19:36,271:__main__:INFO: Vocab size: 1509
+2022-01-31 23:19:37,506:__main__:INFO: model architecture
+2022-01-31 23:19:37,506:__main__:INFO: FixedStackRNNG(
+  (action_criterion): CrossEntropyLoss()
+  (word_criterion): CrossEntropyLoss()
+  (dropout): Dropout(p=0.3, inplace=True)
+  (emb): Sequential(
+    (0): Embedding(1509, 256, padding_idx=0)
+    (1): Dropout(p=0.3, inplace=True)
+  )
+  (rnng): RNNGCell(
+    (dropout): Dropout(p=0.3, inplace=True)
+    (nt_emb): Sequential(
+      (0): Embedding(26, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+    (stack_rnn): MultiLayerLSTMCell(
+      (lstm): ModuleList(
+        (0): LSTMCell(256, 256)
+        (1): LSTMCell(256, 256)
+      )
+      (dropout_layer): Dropout(p=0.3, inplace=True)
+    )
+    (output): Sequential(
+      (0): Dropout(p=0.3, inplace=True)
+      (1): Linear(in_features=256, out_features=256, bias=True)
+      (2): ReLU()
+    )
+    (composition): LSTMComposition(
+      (rnn): LSTM(256, 256, batch_first=True, bidirectional=True)
+      (output): Sequential(
+        (0): Dropout(p=0.3, inplace=True)
+        (1): Linear(in_features=512, out_features=256, bias=True)
+        (2): ReLU()
+      )
+    )
+    (initial_emb): Sequential(
+      (0): Embedding(1, 256)
+      (1): Dropout(p=0.3, inplace=True)
+    )
+  )
+  (vocab_mlp): Linear(in_features=256, out_features=1509, bias=True)
+  (action_mlp): Linear(in_features=256, out_features=29, bias=True)
+)
+2022-01-31 23:19:37,507:__main__:INFO: Model total parameters: 2704642
+2022-01-31 23:19:37,507:__main__:INFO: Starting epoch 1
+2022-01-31 23:19:37,507:__main__:INFO: Making decisions.
+2022-01-31 23:23:43,268:__main__:INFO: Making validation decisions.
+2022-01-31 23:24:29,354:__main__:INFO: Epoch: 1, Batch: 87/87, LR: 0.0010, ActionPPL: 5.15, WordPPL: 590.86, PPL: 47.115091, LL: 159273.9144973755, |Param|: 627.61, E[batch size]: 15.804597701149426, Throughput: 4.71 examples/sec
+2022-01-31 23:24:29,354:__main__:INFO: --------------------------------
+2022-01-31 23:24:29,354:__main__:INFO: Checking validation perplexity...
+2022-01-31 23:24:30,253:__main__:INFO: PPL: 15.846727, Loss: 17909.526177, ActionPPL: 1.743804, WordPPL: 201.111106
+2022-01-31 23:24:30,254:__main__:INFO: --------------------------------
+2022-01-31 23:24:30,254:__main__:INFO: Saving checkpoint to rnng_small1_31a.pt
+2022-01-31 23:24:30,293:__main__:INFO: Starting epoch 2
+2022-01-31 23:24:30,293:__main__:INFO: Making decisions.
+2022-01-31 23:27:49,411:__main__:INFO: Making validation decisions.
+2022-01-31 23:28:27,837:__main__:INFO: Epoch: 2, Batch: 87/87, LR: 0.0010, ActionPPL: 1.59, WordPPL: 219.95, PPL: 15.887606, LL: 114332.92658996582, |Param|: 627.64, E[batch size]: 15.804597701149426, Throughput: 5.79 examples/sec
+2022-01-31 23:28:27,837:__main__:INFO: --------------------------------
+2022-01-31 23:28:27,837:__main__:INFO: Checking validation perplexity...
+2022-01-31 23:28:28,736:__main__:INFO: PPL: 11.116316, Loss: 15611.339008, ActionPPL: 1.403761, WordPPL: 120.402853
+2022-01-31 23:28:28,737:__main__:INFO: --------------------------------
+2022-01-31 23:28:28,737:__main__:INFO: Saving checkpoint to rnng_small1_31a.pt
+2022-01-31 23:28:28,773:__main__:INFO: Starting epoch 3
+2022-01-31 23:28:28,773:__main__:INFO: Making decisions.
+2022-01-31 23:31:45,836:__main__:INFO: Making validation decisions.
+2022-01-31 23:32:23,999:__main__:INFO: Epoch: 3, Batch: 87/87, LR: 0.0010, ActionPPL: 1.37, WordPPL: 153.74, PPL: 12.401814, LL: 104137.9764251709, |Param|: 627.98, E[batch size]: 15.804597701149426, Throughput: 5.85 examples/sec
+2022-01-31 23:32:23,999:__main__:INFO: --------------------------------
+2022-01-31 23:32:23,999:__main__:INFO: Checking validation perplexity...
+2022-01-31 23:32:24,898:__main__:INFO: PPL: 9.636995, Loss: 14690.210684, ActionPPL: 1.338248, WordPPL: 93.686906
+2022-01-31 23:32:24,898:__main__:INFO: --------------------------------
+2022-01-31 23:32:24,898:__main__:INFO: Saving checkpoint to rnng_small1_31a.pt
+2022-01-31 23:32:24,934:__main__:INFO: Starting epoch 4
+2022-01-31 23:32:24,934:__main__:INFO: Making decisions.
+2022-01-31 23:35:42,760:__main__:INFO: Making validation decisions.
+2022-01-31 23:36:21,268:__main__:INFO: Epoch: 4, Batch: 87/87, LR: 0.0010, ActionPPL: 1.33, WordPPL: 126.61, PPL: 11.136676, LL: 99697.32597732544, |Param|: 628.37, E[batch size]: 15.804597701149426, Throughput: 5.82 examples/sec
+2022-01-31 23:36:21,268:__main__:INFO: --------------------------------
+2022-01-31 23:36:21,268:__main__:INFO: Checking validation perplexity...
+2022-01-31 23:36:22,178:__main__:INFO: PPL: 9.265871, Loss: 14435.575020, ActionPPL: 1.311178, WordPPL: 88.145399
+2022-01-31 23:36:22,178:__main__:INFO: --------------------------------
+2022-01-31 23:36:22,178:__main__:INFO: Saving checkpoint to rnng_small1_31a.pt
+2022-01-31 23:36:22,214:__main__:INFO: Starting epoch 5
+2022-01-31 23:36:22,214:__main__:INFO: Making decisions.
+2022-01-31 23:39:35,426:__main__:INFO: Making validation decisions.
+2022-01-31 23:40:13,011:__main__:INFO: Epoch: 5, Batch: 87/87, LR: 0.0010, ActionPPL: 1.30, WordPPL: 111.76, PPL: 10.398661, LL: 96856.44752120972, |Param|: 628.65, E[batch size]: 15.804597701149426, Throughput: 5.96 examples/sec
+2022-01-31 23:40:13,011:__main__:INFO: --------------------------------
+2022-01-31 23:40:13,011:__main__:INFO: Checking validation perplexity...
+2022-01-31 23:40:13,916:__main__:INFO: PPL: 8.969249, Loss: 14224.611802, ActionPPL: 1.297394, WordPPL: 83.191513
+2022-01-31 23:40:13,916:__main__:INFO: --------------------------------
+2022-01-31 23:40:13,917:__main__:INFO: Saving checkpoint to rnng_small1_31a.pt
+2022-01-31 23:40:13,952:__main__:INFO: Starting epoch 6
+2022-01-31 23:40:13,952:__main__:INFO: Making decisions.
+2022-01-31 23:43:16,376:__main__:INFO: Making validation decisions.
+2022-01-31 23:43:52,441:__main__:INFO: Epoch: 6, Batch: 87/87, LR: 0.0010, ActionPPL: 1.29, WordPPL: 99.75, PPL: 9.818645, LL: 94487.08779907227, |Param|: 628.94, E[batch size]: 15.804597701149426, Throughput: 6.29 examples/sec
+2022-01-31 23:43:52,441:__main__:INFO: --------------------------------
+2022-01-31 23:43:52,441:__main__:INFO: Checking validation perplexity...
+2022-01-31 23:43:53,342:__main__:INFO: PPL: 9.123743, Loss: 14335.346516, ActionPPL: 1.302103, WordPPL: 85.946399
+2022-01-31 23:43:53,343:__main__:INFO: --------------------------------
+2022-01-31 23:43:53,343:__main__:INFO: Starting epoch 7
+2022-01-31 23:43:53,343:__main__:INFO: Making decisions.
+2022-01-31 23:47:01,964:__main__:INFO: Making validation decisions.
+2022-01-31 23:47:39,310:__main__:INFO: Epoch: 7, Batch: 87/87, LR: 0.0010, ActionPPL: 1.28, WordPPL: 92.66, PPL: 9.452886, LL: 92912.29064941406, |Param|: 629.28, E[batch size]: 15.804597701149426, Throughput: 6.08 examples/sec
+2022-01-31 23:47:39,311:__main__:INFO: --------------------------------
+2022-01-31 23:47:39,311:__main__:INFO: Checking validation perplexity...
+2022-01-31 23:47:40,206:__main__:INFO: PPL: 8.868169, Loss: 14151.124852, ActionPPL: 1.293796, WordPPL: 81.447168
+2022-01-31 23:47:40,206:__main__:INFO: --------------------------------
+2022-01-31 23:47:40,207:__main__:INFO: Saving checkpoint to rnng_small1_31a.pt
+2022-01-31 23:47:40,243:__main__:INFO: Starting epoch 8
+2022-01-31 23:47:40,243:__main__:INFO: Making decisions.
+2022-01-31 23:50:43,354:__main__:INFO: Making validation decisions.
+2022-01-31 23:51:19,827:__main__:INFO: Epoch: 8, Batch: 87/87, LR: 0.0010, ActionPPL: 1.28, WordPPL: 81.72, PPL: 8.897072, LL: 90405.84244155884, |Param|: 629.57, E[batch size]: 15.804597701149426, Throughput: 6.26 examples/sec
+2022-01-31 23:51:19,827:__main__:INFO: --------------------------------
+2022-01-31 23:51:19,828:__main__:INFO: Checking validation perplexity...
+2022-01-31 23:51:20,732:__main__:INFO: PPL: 8.873720, Loss: 14155.182102, ActionPPL: 1.311075, WordPPL: 80.319910
+2022-01-31 23:51:20,732:__main__:INFO: --------------------------------
+2022-01-31 23:51:20,732:__main__:INFO: Starting epoch 9
+2022-01-31 23:51:20,732:__main__:INFO: Making decisions.
+2022-01-31 23:54:26,366:__main__:INFO: Making validation decisions.
+2022-01-31 23:55:03,228:__main__:INFO: Epoch: 9, Batch: 87/87, LR: 0.0010, ActionPPL: 1.28, WordPPL: 77.17, PPL: 8.660311, LL: 89290.24138069153, |Param|: 629.92, E[batch size]: 15.804597701149426, Throughput: 6.18 examples/sec
+2022-01-31 23:55:03,228:__main__:INFO: --------------------------------
+2022-01-31 23:55:03,228:__main__:INFO: Checking validation perplexity...
+2022-01-31 23:55:04,136:__main__:INFO: PPL: 8.793674, Loss: 14100.775392, ActionPPL: 1.286974, WordPPL: 80.573238
+2022-01-31 23:55:04,136:__main__:INFO: --------------------------------
+2022-01-31 23:55:04,136:__main__:INFO: Saving checkpoint to rnng_small1_31a.pt
+2022-01-31 23:55:04,173:__main__:INFO: Starting epoch 10
+2022-01-31 23:55:04,174:__main__:INFO: Making decisions.
+2022-01-31 23:58:02,085:__main__:INFO: Making validation decisions.
+2022-01-31 23:58:37,569:__main__:INFO: Epoch: 10, Batch: 87/87, LR: 0.0010, ActionPPL: 1.27, WordPPL: 71.71, PPL: 8.345650, LL: 87759.42660522461, |Param|: 630.22, E[batch size]: 15.804597701149426, Throughput: 6.44 examples/sec
+2022-01-31 23:58:37,570:__main__:INFO: --------------------------------
+2022-01-31 23:58:37,570:__main__:INFO: Checking validation perplexity...
+2022-01-31 23:58:38,479:__main__:INFO: PPL: 8.505790, Loss: 13880.604401, ActionPPL: 1.280314, WordPPL: 75.357075
+2022-01-31 23:58:38,479:__main__:INFO: --------------------------------
+2022-01-31 23:58:38,480:__main__:INFO: Saving checkpoint to rnng_small1_31a.pt
+2022-01-31 23:58:38,516:__main__:INFO: Starting epoch 11
+2022-01-31 23:58:38,516:__main__:INFO: Making decisions.
+2022-02-01 00:01:30,518:__main__:INFO: Making validation decisions.
+2022-02-01 00:02:04,969:__main__:INFO: Epoch: 11, Batch: 87/87, LR: 0.0010, ActionPPL: 1.27, WordPPL: 67.27, PPL: 8.098238, LL: 86514.68446540833, |Param|: 630.52, E[batch size]: 15.804597701149426, Throughput: 6.66 examples/sec
+2022-02-01 00:02:04,969:__main__:INFO: --------------------------------
+2022-02-01 00:02:04,970:__main__:INFO: Checking validation perplexity...
+2022-02-01 00:02:05,874:__main__:INFO: PPL: 8.835750, Loss: 14131.735685, ActionPPL: 1.281384, WordPPL: 81.814933
+2022-02-01 00:02:05,874:__main__:INFO: --------------------------------
+2022-02-01 00:02:05,874:__main__:INFO: Starting epoch 12
+2022-02-01 00:02:05,874:__main__:INFO: Making decisions.
+2022-02-01 00:05:05,447:__main__:INFO: Making validation decisions.
+2022-02-01 00:05:41,364:__main__:INFO: Epoch: 12, Batch: 87/87, LR: 0.0010, ActionPPL: 1.27, WordPPL: 63.06, PPL: 7.837219, LL: 85159.56090164185, |Param|: 630.89, E[batch size]: 15.804597701149426, Throughput: 6.38 examples/sec
+2022-02-01 00:05:41,364:__main__:INFO: --------------------------------
+2022-02-01 00:05:41,365:__main__:INFO: Checking validation perplexity...
+2022-02-01 00:05:42,266:__main__:INFO: PPL: 8.660520, Loss: 14001.813268, ActionPPL: 1.276375, WordPPL: 78.716578
+2022-02-01 00:05:42,267:__main__:INFO: --------------------------------
+2022-02-01 00:05:42,267:__main__:INFO: Starting epoch 13
+2022-02-01 00:05:42,267:__main__:INFO: Making decisions.
+2022-02-01 00:08:21,213:__main__:INFO: Making validation decisions.
+2022-02-01 00:08:53,959:__main__:INFO: Epoch: 13, Batch: 87/87, LR: 0.0010, ActionPPL: 1.26, WordPPL: 58.83, PPL: 7.579822, LL: 83778.30743408203, |Param|: 631.26, E[batch size]: 15.804597701149426, Throughput: 7.17 examples/sec
+2022-02-01 00:08:53,959:__main__:INFO: --------------------------------
+2022-02-01 00:08:53,959:__main__:INFO: Checking validation perplexity...
+2022-02-01 00:08:54,863:__main__:INFO: PPL: 8.824051, Loss: 14123.142268, ActionPPL: 1.279021, WordPPL: 81.755667
+2022-02-01 00:08:54,863:__main__:INFO: --------------------------------
+2022-02-01 00:08:54,863:__main__:INFO: Starting epoch 14
+2022-02-01 00:08:54,863:__main__:INFO: Making decisions.
+2022-02-01 00:11:45,236:__main__:INFO: Making validation decisions.
+2022-02-01 00:12:20,065:__main__:INFO: Epoch: 14, Batch: 87/87, LR: 0.0010, ActionPPL: 1.26, WordPPL: 54.33, PPL: 7.297951, LL: 82210.85028076172, |Param|: 631.66, E[batch size]: 15.804597701149426, Throughput: 6.70 examples/sec
+2022-02-01 00:12:20,065:__main__:INFO: --------------------------------
+2022-02-01 00:12:20,066:__main__:INFO: Checking validation perplexity...
+2022-02-01 00:12:20,971:__main__:INFO: PPL: 9.074154, Loss: 14300.009143, ActionPPL: 1.282240, WordPPL: 86.461922
+2022-02-01 00:12:20,971:__main__:INFO: --------------------------------
+2022-02-01 00:12:20,972:__main__:INFO: Starting epoch 15
+2022-02-01 00:12:20,972:__main__:INFO: Making decisions.
+2022-02-01 00:14:55,701:__main__:INFO: Making validation decisions.
+2022-02-01 00:15:28,373:__main__:INFO: Epoch: 15, Batch: 87/87, LR: 0.0010, ActionPPL: 1.26, WordPPL: 51.37, PPL: 7.105582, LL: 81105.94793701172, |Param|: 631.98, E[batch size]: 15.804597701149426, Throughput: 7.34 examples/sec
+2022-02-01 00:15:28,373:__main__:INFO: --------------------------------
+2022-02-01 00:15:28,373:__main__:INFO: Checking validation perplexity...
+2022-02-01 00:15:29,287:__main__:INFO: PPL: 9.072808, Loss: 14312.278654, ActionPPL: 1.293555, WordPPL: 85.896465
+2022-02-01 00:15:29,287:__main__:INFO: --------------------------------
+2022-02-01 00:15:29,287:__main__:INFO: Starting epoch 16
+2022-02-01 00:15:29,287:__main__:INFO: Making decisions.
+2022-02-01 00:18:06,517:__main__:INFO: Making validation decisions.
+2022-02-01 00:18:39,312:__main__:INFO: Epoch: 16, Batch: 87/87, LR: 0.0010, ActionPPL: 1.26, WordPPL: 48.23, PPL: 6.896231, LL: 79872.84852409363, |Param|: 632.44, E[batch size]: 15.804597701149426, Throughput: 7.24 examples/sec
+2022-02-01 00:18:39,313:__main__:INFO: --------------------------------
+2022-02-01 00:18:39,313:__main__:INFO: Checking validation perplexity...
+2022-02-01 00:18:40,232:__main__:INFO: PPL: 9.177783, Loss: 14386.938779, ActionPPL: 1.298053, WordPPL: 87.699478
+2022-02-01 00:18:40,233:__main__:INFO: --------------------------------
+2022-02-01 00:18:40,233:__main__:INFO: Starting epoch 17
+2022-02-01 00:18:40,233:__main__:INFO: Making decisions.
+2022-02-01 00:21:21,218:__main__:INFO: Making validation decisions.
+2022-02-01 00:21:54,948:__main__:INFO: Epoch: 17, Batch: 87/87, LR: 0.0010, ActionPPL: 1.26, WordPPL: 45.58, PPL: 6.715279, LL: 78769.18896484375, |Param|: 632.77, E[batch size]: 15.804597701149426, Throughput: 7.06 examples/sec
+2022-02-01 00:21:54,948:__main__:INFO: --------------------------------
+2022-02-01 00:21:54,949:__main__:INFO: Checking validation perplexity...
+2022-02-01 00:21:55,852:__main__:INFO: PPL: 9.098248, Loss: 14321.619206, ActionPPL: 1.278749, WordPPL: 87.343978
+2022-02-01 00:21:55,853:__main__:INFO: --------------------------------
+2022-02-01 00:21:55,853:__main__:INFO: Starting epoch 18
+2022-02-01 00:21:55,853:__main__:INFO: Making decisions.
+2022-02-01 00:24:22,868:__main__:INFO: Making validation decisions.
+2022-02-01 00:24:54,566:__main__:INFO: Epoch: 18, Batch: 87/87, LR: 0.0010, ActionPPL: 1.26, WordPPL: 43.44, PPL: 6.558804, LL: 77793.99425506592, |Param|: 633.09, E[batch size]: 15.804597701149426, Throughput: 7.69 examples/sec
+2022-02-01 00:24:54,566:__main__:INFO: --------------------------------
+2022-02-01 00:24:54,566:__main__:INFO: Checking validation perplexity...
+2022-02-01 00:24:55,481:__main__:INFO: PPL: 9.028321, Loss: 14271.576716, ActionPPL: 1.274367, WordPPL: 86.245876
+2022-02-01 00:24:55,481:__main__:INFO: --------------------------------
+2022-02-01 00:24:55,481:__main__:INFO: Finished training!

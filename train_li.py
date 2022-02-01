@@ -212,12 +212,16 @@ def main(args):
   
   vocab = dataset_builder.vocab  # are we overwriting it?
   action_dict = dataset_builder.action_dict
-  val_data = Dataset.from_json(args.val_file, args.batch_size, vocab, action_dict,
-                               oracle=args.strategy)
+  # val_data = Dataset.from_json(args.val_file, args.batch_size, vocab, action_dict,
+  #                              oracle=args.strategy)
+  val_builder = LI_Dataset.from_json(args.val_file, batch_size=args.batch_size,
+                                     vocab=vocab, action_dict=action_dict,
+                                     oracle=args.strategy)
   vocab_size = int(dataset_builder.vocab_size)
-  logger.info('Train: %d sents / %d batches, Val: %d sents / %d batches' %
-              (len(dataset_builder.sents), 0.0, len(val_data.sents),
-               len(val_data)))
+  # logger.info('Train: %d sents / %d batches, Val: %d sents / %d batches' %
+  #             (len(dataset_builder.sents), 0.0, len(val_data.sents),
+  #              len(val_data)))
+  logger.info('Train: %d sents' % (len(dataset_builder.sents)))
   logger.info('Vocab size: %d' % vocab_size)
 
   # the $1000 code right here
@@ -284,9 +288,16 @@ def main(args):
     batch_sizes = []
 
     model.eval()
+
+    logger.info("Making decisions.")
     dataset_builder.make_decisions(model, device, beam_size=100)
     train_mod = dataset_builder.modified_sentences()
     train_shf = dataset_builder.shuffled_sentences()
+
+    logger.info("Making validation decisions.")
+    val_builder.make_decisions(model, device, beam_size=100)
+    val_data = val_builder.modified_sentences()
+
     model.train()
 
     def output_learn_log():
@@ -351,6 +362,7 @@ def main(args):
 
     def try_batch_step(token_ids, action_ids, max_stack_size, subword_end_mask,
                        num_divides = 1, bias = 1):
+      # print(action_ids)
       try:
         return batch_step(token_ids, action_ids, max_stack_size, subword_end_mask, num_divides, bias)
       except RuntimeError as e:  # memory error -> retry by reducing batch size
@@ -372,97 +384,100 @@ def main(args):
     # reminder: train_mod is a Database object
     for batch in train_mod.batches():
       token_ids, action_ids, max_stack_size, subword_end_mask, batch_idx = batch
-      batch_sizes.append(token_ids.size(0))
-      token_ids = token_ids.to(device)
-      action_ids = action_ids.to(device)
-      subword_end_mask = subword_end_mask.to(device)
-      b += 1
-      global_batch_i += 1
-      # optimizer.zero_grad()
+      # print(action_ids.size())
+      if action_ids.size()[1]:
+        batch_sizes.append(token_ids.size(0))
+        token_ids = token_ids.to(device)
+        action_ids = action_ids.to(device)
+        subword_end_mask = subword_end_mask.to(device)
+        b += 1
+        global_batch_i += 1
+        # optimizer.zero_grad()
 
-      batch_ll = try_batch_step(token_ids, action_ids, max_stack_size, subword_end_mask)
-      total_a_ll += batch_ll[0]
-      total_w_ll += batch_ll[1]
+        batch_ll = try_batch_step(token_ids, action_ids, max_stack_size, subword_end_mask)
+        total_a_ll += batch_ll[0]
+        total_w_ll += batch_ll[1]
 
-      if args.amp:
-        if args.max_grad_norm > 0:
-          scaler.unscale_(optimizer)
-          torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
-        scaler.step(optimizer)
-        scaler.update()
-      else:
-        if args.max_grad_norm > 0:
-          torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
-        optimizer.step()
+        if args.amp:
+          if args.max_grad_norm > 0:
+            scaler.unscale_(optimizer)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
+          scaler.step(optimizer)
+          scaler.update()
+        else:
+          if args.max_grad_norm > 0:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
+          optimizer.step()
 
-      if not isinstance(scheduler, ReduceLROnPlateau):
-        scheduler.step()
+        if not isinstance(scheduler, ReduceLROnPlateau):
+          scheduler.step()
 
-      num_sents += token_ids.size(0)
-      # assert token_ids.size(0) * token_ids.size(1) == w_loss.size(0)
-      num_actions += batch_ll[2]
-      num_words += batch_ll[3]
+        num_sents += token_ids.size(0)
+        # assert token_ids.size(0) * token_ids.size(1) == w_loss.size(0)
+        num_actions += batch_ll[2]
+        num_words += batch_ll[3]
 
-      # trying to obtain a discrete value that would have meaning at each epoch boundary.
-      continuous_epoch = int(((epoch-1) + (b / len(train_mod))) * 10000)
+        # trying to obtain a discrete value that would have meaning at each epoch boundary.
+        continuous_epoch = int(((epoch-1) + (b / len(train_mod))) * 10000)
 
-      if b % args.print_every == 0:
-        ppl, word_ppl, _ = output_learn_log()
-        prev_ll = total_a_ll + total_w_ll
-        tb.write({'Train ppl': ppl, 'Train word ppl': word_ppl, 'lr': args.lr}, continuous_epoch)
+        if b % args.print_every == 0:
+          ppl, word_ppl, _ = output_learn_log()
+          prev_ll = total_a_ll + total_w_ll
+          tb.write({'Train ppl': ppl, 'Train word ppl': word_ppl, 'lr': args.lr}, continuous_epoch)
 
-      if args.valid_every > 0 and global_batch_i % args.valid_every == 0:
-        do_valid(model, optimizer, scheduler, train_mod, val_data, tb, epoch, continuous_epoch, val_losses, args)
+        if args.valid_every > 0 and global_batch_i % args.valid_every == 0:
+          do_valid(model, optimizer, scheduler, train_mod, val_data, tb, epoch, continuous_epoch, val_losses, args)
 
     ### SHUFFLED DATA ###
     for batch in train_shf.batches():
       token_ids, action_ids, max_stack_size, subword_end_mask, batch_idx = batch
-      batch_sizes.append(token_ids.size(0))
-      token_ids = token_ids.to(device)
-      action_ids = action_ids.to(device)
-      subword_end_mask = subword_end_mask.to(device)
-      b += 1
-      global_batch_i += 1
-      # optimizer.zero_grad()
+      if action_ids.size()[1]:
+        batch_sizes.append(token_ids.size(0))
+        token_ids = token_ids.to(device)
+        action_ids = action_ids.to(device)
+        subword_end_mask = subword_end_mask.to(device)
+        b += 1
+        global_batch_i += 1
+        # optimizer.zero_grad()
 
-      batch_ll = try_batch_step(token_ids, action_ids, max_stack_size, subword_end_mask, bias=-0.5)
-      total_a_ll += batch_ll[0]
-      total_w_ll += batch_ll[1]
+        batch_ll = try_batch_step(token_ids, action_ids, max_stack_size, subword_end_mask, bias=-0.5)
+        total_a_ll += batch_ll[0]
+        total_w_ll += batch_ll[1]
 
-      if args.amp:
-        if args.max_grad_norm > 0:
-          scaler.unscale_(optimizer)
-          torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
-        scaler.step(optimizer)
-        scaler.update()
-      else:
-        if args.max_grad_norm > 0:
-          torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
-        optimizer.step()
+        if args.amp:
+          if args.max_grad_norm > 0:
+            scaler.unscale_(optimizer)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
+          scaler.step(optimizer)
+          scaler.update()
+        else:
+          if args.max_grad_norm > 0:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
+          optimizer.step()
 
-      if not isinstance(scheduler, ReduceLROnPlateau):
-        scheduler.step()
+        if not isinstance(scheduler, ReduceLROnPlateau):
+          scheduler.step()
 
-      num_sents += token_ids.size(0)
-      # assert token_ids.size(0) * token_ids.size(1) == w_loss.size(0)
-      num_actions += batch_ll[2]
-      num_words += batch_ll[3]
+        num_sents += token_ids.size(0)
+        # assert token_ids.size(0) * token_ids.size(1) == w_loss.size(0)
+        num_actions += batch_ll[2]
+        num_words += batch_ll[3]
 
-      # trying to obtain a discrete value that would have meaning at each epoch boundary.
-      continuous_epoch = int(((epoch-1) + (b / len(train_shf))) * 10000)
+        # trying to obtain a discrete value that would have meaning at each epoch boundary.
+        continuous_epoch = int(((epoch-1) + (b / len(train_shf))) * 10000)
 
-      if b % args.print_every == 0:
-        ppl, word_ppl, _ = output_learn_log()
-        prev_ll = total_a_ll + total_w_ll
-        tb.write({'Train ppl': ppl, 'Train word ppl': word_ppl, 'lr': args.lr}, continuous_epoch)
+        if b % args.print_every == 0:
+          ppl, word_ppl, _ = output_learn_log()
+          prev_ll = total_a_ll + total_w_ll
+          tb.write({'Train ppl': ppl, 'Train word ppl': word_ppl, 'lr': args.lr}, continuous_epoch)
 
-      if args.valid_every > 0 and global_batch_i % args.valid_every == 0:
-        do_valid(model, optimizer, scheduler, train_shf, val_data, tb, epoch, continuous_epoch, val_losses, args)
+        # if args.valid_every > 0 and global_batch_i % args.valid_every == 0:
+        #   do_valid(model, optimizer, scheduler, train_shf, val_data, tb, epoch, continuous_epoch, val_losses, args)
 
     output_learn_log()
     epoch += 1
     if args.valid_every <= 0:
-      do_valid(model, optimizer, scheduler, train_shf, val_data, tb, epoch, epoch, val_losses, args)
+      do_valid(model, optimizer, scheduler, train_mod, val_data, tb, epoch, epoch, val_losses, args)
 
   # Last validation is necessary when validations were performed intermediately.
   if args.valid_every > 0:
@@ -514,18 +529,20 @@ def eval_action_ppl(data, model):
   with torch.no_grad():
     for batch in data.batches():
       token_ids, action_ids, max_stack_size, subword_end_mask, batch_idx = batch
-      token_ids = token_ids.to(device)
-      action_ids = action_ids.to(device)
-      subword_end_mask = subword_end_mask.to(device)
-      loss, a_loss, w_loss, _ = model(token_ids, action_ids,
-                                      stack_size_bound=max_stack_size,
-                                      subword_end_mask=subword_end_mask)
-      total_a_ll += -a_loss.sum().detach().item()
-      total_w_ll += -w_loss.sum().detach().item()
+      # print(action_ids.size())
+      if action_ids.size()[0]:
+        token_ids = token_ids.to(device)
+        action_ids = action_ids.to(device)
+        subword_end_mask = subword_end_mask.to(device)
+        loss, a_loss, w_loss, _ = model(token_ids, action_ids,
+                                        stack_size_bound=max_stack_size,
+                                        subword_end_mask=subword_end_mask)
+        total_a_ll += -a_loss.sum().detach().item()
+        total_w_ll += -w_loss.sum().detach().item()
 
-      num_sents += token_ids.size(0)
-      num_words += w_loss.size(0)
-      num_actions += a_loss.size(0)
+        num_sents += token_ids.size(0)
+        num_words += w_loss.size(0)
+        num_actions += a_loss.size(0)
 
   ppl = np.exp((-total_a_ll - total_w_ll) / (num_actions + num_words))
   loss = -(total_a_ll + total_w_ll)

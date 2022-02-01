@@ -633,7 +633,7 @@ class LI_Dataset(object):
 
     return toret
   
-  def make_decisions(self, model, device, beam_size=100, word_beam_size=10,
+  def make_decisions(self, model, device, beam_size=50, word_beam_size=10,
                      shift_size=5, block_size=100, stack_size_bound=-1,
                      max_length_diff=20):
     self._decisions = beam_search(model, device, self.get_beam_dataset(),

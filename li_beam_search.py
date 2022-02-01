@@ -7,6 +7,23 @@ def parse(model, tokens, subword_end_mask, beam_size, word_beam_size,
                                        return_beam_history=return_beam_history,
                                        stack_size_bound=stack_size_bound)
 
+def validate_actions(action_list):
+  valid = []
+  depth = 0
+  for a in action_list:
+    if a == 2:          # REDUCE
+      if depth > 1:
+        valid.append(a)
+        depth -= 1
+    elif a > 2:         # NT(X)
+      valid.append(a)
+      depth += 1
+    else:               # SHIFT
+      valid.append(a)
+  for _ in range(depth):
+    valid.append(2)
+  return valid
+
 def beam_search(model, device, dataset, beam_size=200, word_beam_size=20,
                 shift_size=5, block_size=100, stack_size_bound=-1,
                 max_length_diff=20):
@@ -35,11 +52,12 @@ def beam_search(model, device, dataset, beam_size=200, word_beam_size=20,
             subword_end_mask = subword_end_mask.cpu().numpy()
             for i in range(len(batch_idx)):
                 sents.append(
-                    {'action_ids': best_actions[i],
+                    {'action_ids': validate_actions(best_actions[i]),
                      'tokens': dataset.sents[batch_idx[i]].tokens,
                      'token_ids': dataset.sents[batch_idx[i]].token_ids
                     })
     
+            # print(sents)
     return sents
 
 def load_model(checkpoint, action_dict, vocab):
